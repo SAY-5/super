@@ -361,6 +361,16 @@ func (t *TypeOfNull) Kind() Kind {
 	return PrimitiveKind
 }
 
+type TypeOfNone struct{}
+
+func (t *TypeOfNone) ID() int {
+	return IDNone
+}
+
+func (t *TypeOfNone) Kind() Kind {
+	return PrimitiveKind
+}
+
 type TypeOfString struct{}
 
 func EncodeString(s string) scode.Bytes {
