@@ -1,6 +1,7 @@
 package function
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/brimdata/super"
@@ -40,9 +41,14 @@ func (u *Upcast) Cast(from super.Value, to super.Type) (super.Value, bool) {
 	return super.Value{}, false
 }
 
+// add to tests
+// echo "1::(int64|string)::((int64|string)|(int64|bool)) true" | go run ./cmd/super -c "fuse" -
+// (fuse shouldn't have a fusion type here for single value)
+
 func (u *Upcast) build(b *scode.Builder, typ super.Type, bytes scode.Bytes, to super.Type) bool {
-	typOrig := typ
-	typ = super.TypeUnder(typ)
+	fmt.Println("UPCAST", sup.String(super.NewValue(typ, bytes)), "TO", sup.String(to))
+	//typOrig := typ
+	//typ = super.TypeUnder(typ)
 	switch to := to.(type) {
 	case *super.TypeRecord:
 		return u.toRecord(b, typ, bytes, to)
@@ -57,14 +63,17 @@ func (u *Upcast) build(b *scode.Builder, typ super.Type, bytes scode.Bytes, to s
 	case *super.TypeError:
 		return u.toError(b, typ, bytes, to)
 	case *super.TypeNamed:
-		return u.build(b, typ, bytes, to.Type)
+		return u.toNamed(b, typ, bytes, to)
 	case *super.TypeFusion:
-		return u.toFusion(b, typOrig, bytes, to)
+		return u.toFusion(b, typ, bytes, to)
 	default:
+		fmt.Println("DEFAULT")
 		if typ == to {
 			b.Append(bytes)
+			fmt.Println("OK")
 			return true
 		}
+		fmt.Println("FAIL")
 		return false
 	}
 }
@@ -140,11 +149,10 @@ func (u *Upcast) toSet(b *scode.Builder, typ super.Type, bytes scode.Bytes, to *
 	return false
 }
 
-func (u *Upcast) toContainer(b *scode.Builder, typ super.Type, bytes scode.Bytes, to super.Type) bool {
+func (u *Upcast) toContainer(b *scode.Builder, elemType super.Type, bytes scode.Bytes, toElemType super.Type) bool {
 	b.BeginContainer()
 	for it := bytes.Iter(); !it.Done(); {
-		typ, bytes := deunion(typ, it.Next())
-		if ok := u.build(b, typ, bytes, to); !ok {
+		if ok := u.build(b, elemType, it.Next(), toElemType); !ok {
 			return false
 		}
 	}
@@ -173,11 +181,18 @@ func (u *Upcast) toMap(b *scode.Builder, typ super.Type, bytes scode.Bytes, to *
 func (u *Upcast) toUnion(b *scode.Builder, typ super.Type, bytes scode.Bytes, to *super.TypeUnion) bool {
 	// Take the value out of the union (if it is union), then look for it
 	// in the target union.
-	typ, bytes = deunion(typ, bytes)
+	//typ, bytes = deunion(typ, bytes)
+	if to == typ {
+		b.Append(bytes)
+		return true
+	}
+	//fmt.Println("TO UNION", sup.String(super.NewValue(typ, bytes)), sup.String(to))
 	tag := upcastUnionTag(to.Types, typ)
 	if tag < 0 {
+		fmt.Println("FAILX")
 		return false
 	}
+	//fmt.Println("TO UNION TAG", tag)
 	super.BeginUnion(b, tag)
 	if ok := u.build(b, typ, bytes, to.Types[tag]); !ok {
 		return false
@@ -204,10 +219,19 @@ func deunion(typ super.Type, bytes scode.Bytes) (super.Type, scode.Bytes) {
 	return typ, bytes
 }
 
-func upcastUnionTag(types []super.Type, out super.Type) int {
-	k := out.Kind()
+// XXX need to fix for named types
+func upcastUnionTag(types []super.Type, typ super.Type) int {
+	if named, ok := typ.(*super.TypeNamed); ok {
+		return slices.IndexFunc(types, func(t super.Type) bool {
+			if t, ok := t.(*super.TypeNamed); ok {
+				return t.Name == named.Name
+			}
+			return false
+		})
+	}
+	k := typ.Kind()
 	if k == super.PrimitiveKind {
-		id := out.ID()
+		id := typ.ID()
 		return slices.IndexFunc(types, func(t super.Type) bool { return t.ID() == id })
 	}
 	return slices.IndexFunc(types, func(t super.Type) bool { return t.Kind() == k })
@@ -216,6 +240,14 @@ func upcastUnionTag(types []super.Type, out super.Type) int {
 func (u *Upcast) toError(b *scode.Builder, typ super.Type, bytes scode.Bytes, to *super.TypeError) bool {
 	if errorType, ok := typ.(*super.TypeError); ok {
 		return u.build(b, errorType.Type, bytes, to.Type)
+	}
+	return false
+}
+
+func (u *Upcast) toNamed(b *scode.Builder, typ super.Type, bytes scode.Bytes, to *super.TypeNamed) bool {
+	//XXX look through a union?
+	if named, ok := typ.(*super.TypeNamed); ok {
+		return u.build(b, named.Type, bytes, to.Type)
 	}
 	return false
 }

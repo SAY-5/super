@@ -91,16 +91,11 @@ func (f *Fuser) fuse(a, b super.Type) super.Type {
 			return f.fusion(f.sctx.LookupTypeMap(keyType, valType))
 		}
 	case *super.TypeUnion:
-		types := f.fuseIntoUnionTypes(nil, a)
-		types = f.fuseIntoUnionTypes(types, b)
-		if len(types) == 1 {
-			return types[0]
+		out := f.extendUnion(a, b)
+		if out == a {
+			return a
 		}
-		union, ok := f.sctx.LookupTypeUnion(super.Flatten(types))
-		if !ok {
-			panic(types)
-		}
-		return f.fusion(union)
+		return f.fusion(out)
 	case *super.TypeEnum:
 		if b, ok := b.(*super.TypeEnum); ok {
 			var newSymbols []string
@@ -157,15 +152,14 @@ func (f *Fuser) fuseMono(typ super.Type) super.Type {
 	case *super.TypeMap:
 		out = f.fusion(f.sctx.LookupTypeMap(f.fuseMono(typ.KeyType), f.fuseMono(typ.ValType)))
 	case *super.TypeUnion:
-		types := f.fuseIntoUnionTypes(nil, typ)
-		if len(types) == 1 {
-			out = types[0]
-		} else {
-			var ok bool
-			out, ok = f.sctx.LookupTypeUnion(super.Flatten(types))
-			if !ok {
-				panic(types)
-			}
+		types := make([]super.Type, 0, len(typ.Types))
+		for _, t := range typ.Types {
+			types = append(types, noFusion(f.fuseMono(t)))
+		}
+		var ok bool
+		out, ok = f.sctx.LookupTypeUnion(super.Flatten(types))
+		if !ok {
+			panic(types)
 		}
 	case *super.TypeEnum:
 		return typ
@@ -182,48 +176,65 @@ func (f *Fuser) fuseMono(typ super.Type) super.Type {
 	return out
 }
 
-// fuseIntoUnionTypes fuses typ into types while maintaining the invariant that
-// types contains at most one type of each complex kind but no unions.
-func (f *Fuser) fuseIntoUnionTypes(types []super.Type, typ super.Type) []super.Type {
-	switch typ := typ.(type) {
-	case *super.TypeNamed:
-		return f.addNamed(types, typ)
-	case *super.TypeUnion:
-		for _, t := range typ.Types {
-			types = f.fuseIntoUnionTypes(types, t)
-		}
-		return types
-	case *super.TypeFusion:
-		return f.fuseIntoUnionTypes(types, typ.Type)
+func (f *Fuser) extendUnion(union *super.TypeUnion, typ super.Type) *super.TypeUnion {
+	if fusion, ok := typ.(*super.TypeFusion); ok {
+		return f.extendUnion(union, fusion.Type)
 	}
+	if union.TagOf(typ) >= 0 {
+		return union
+	}
+	if union, ok := f.maybeExtendNamed(union, typ); ok {
+		return union
+	}
+	if union, ok := typ.(*super.TypeUnion); ok {
+		for _, t := range union.Types {
+			union = f.extendUnion(union, t)
+		}
+		return union
+	}
+	out := slices.Clone(union.Types)
 	typKind := typ.Kind()
-	for i, t := range types {
-		switch {
-		case t == typ:
-			// This is already in the union.
-			return types
-		case typKind != super.PrimitiveKind && typKind == t.Kind():
-			types[i] = noFusion(f.fuse(t, typ))
-			return types
+	if typKind != super.PrimitiveKind {
+		for i, t := range union.Types {
+			if typKind == t.Kind() {
+				out[i] = noFusion(f.fuse(t, typ))
+				union, ok := f.sctx.LookupTypeUnion(super.UniqueTypes(out))
+				if !ok {
+					panic(out)
+				}
+				return union
+			}
 		}
 	}
-	return append(types, noFusion(typ))
+	union, ok := f.sctx.LookupTypeUnion(super.UniqueTypes(append(out, typ)))
+	if !ok {
+		panic(typ)
+	}
+	return union
 }
 
-func (f *Fuser) addNamed(types []super.Type, named *super.TypeNamed) []super.Type {
-	for i, t := range types {
+func (f *Fuser) maybeExtendNamed(union *super.TypeUnion, typ super.Type) (*super.TypeUnion, bool) {
+	named, ok := typ.(*super.TypeNamed)
+	if !ok {
+		return nil, false
+	}
+	for i, t := range union.Types {
 		if existingNamed, ok := t.(*super.TypeNamed); ok && existingNamed.Name == named.Name {
-			out := slices.Clone(types)
+			out := slices.Clone(union.Types)
 			fused := noFusion(f.fuse(existingNamed.Type, noFusion(named.Type)))
 			var err error
 			out[i], err = f.sctx.LookupTypeNamed(named.Name, fused)
 			if err != nil {
 				panic(err)
 			}
-			return out
+			union, ok := f.sctx.LookupTypeUnion(out)
+			if !ok {
+				panic(out)
+			}
+			return union, true
 		}
 	}
-	return append(types, named)
+	return nil, false
 }
 
 func noFusion(typ super.Type) super.Type {

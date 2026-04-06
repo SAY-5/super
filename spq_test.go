@@ -51,6 +51,11 @@ func TestSPQ(t *testing.T) {
 	for d := range dirs {
 		t.Run(filepath.ToSlash(d), func(t *testing.T) {
 			t.Parallel()
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("ztest panic: %s: %+v\n%s\n", t.Name(), r, debug.Stack())
+				}
+			}()
 			ztest.Run(t, d)
 		})
 	}
@@ -137,6 +142,9 @@ func runAllBoomerangs(t *testing.T, format string, data map[string]string) {
 		for name, data := range data {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
+				if r := recover(); r != nil {
+					t.Fatalf("boomerang panic: %s: %+v\n%s\n", t.Name(), r, debug.Stack())
+				}
 				runOneBoomerang(t, format, data)
 			})
 		}
