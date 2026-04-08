@@ -56,7 +56,7 @@ func (r *RecordEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 		fields = append(fields, m)
 		off = next
 	}
-	return off, cctx.enter(&Record{Length: r.count, Fields: fields})
+	return off, cctx.enter(&Record{Kind: "Record", Length: r.count, Fields: fields})
 }
 
 func (r *RecordEncoder) Emit(w io.Writer) error {

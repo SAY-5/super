@@ -11,7 +11,6 @@ import (
 	"github.com/brimdata/super/sbuf"
 	"github.com/brimdata/super/scode"
 	"github.com/brimdata/super/sio/bsupio"
-	"github.com/brimdata/super/sup"
 )
 
 type Context struct {
@@ -19,7 +18,6 @@ type Context struct {
 	local  *super.Context // holds the types for the Metadata values
 	metas  []Metadata     // id to Metadata
 	values []super.Value  // id to unmarshaled Metadata
-	uctx   *sup.UnmarshalBSUPContext
 	// On the encode path, the subtypes of all fusion types are stored
 	// in a table that maps the type to a local id.  These IDs are then
 	// used on the decode path via the subtypes array to map back to
@@ -63,15 +61,11 @@ func (c *Context) Lookup(id ID) Metadata {
 }
 
 func (c *Context) unmarshal(id ID) error {
-	if c.uctx == nil {
-		c.uctx = sup.NewBSUPUnmarshaler()
-		c.uctx.SetContext(c.local)
-		c.uctx.Bind(Template...)
-	}
 	if c.metas[id] != nil {
 		return nil
 	}
-	return c.uctx.Unmarshal(c.values[id], &c.metas[id])
+	//XXX need encode side to encode as JSON
+	return unpacker.Unmarshal(c.values[id].Bytes(), &c.metas[id])
 }
 
 func (c *Context) lookupTypeID(sctx *super.Context, typ super.Type) uint32 {

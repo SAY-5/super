@@ -53,7 +53,8 @@ func (p *primitive) loadAnyWithLock(loader *loader) any {
 	}
 	length := p.length()
 	it := scode.Iter(bytes)
-	switch p.meta.Typ.(type) {
+	//XXX fix this to switch direct
+	switch prim(p.meta.TypeID).(type) {
 	case *super.TypeOfUint8, *super.TypeOfUint16, *super.TypeOfUint32, *super.TypeOfUint64, *super.TypeEnum:
 		values := make([]uint64, 0, length)
 		for range length {
@@ -104,11 +105,11 @@ func (p *primitive) loadAnyWithLock(loader *loader) any {
 	case *super.TypeOfNull:
 		return nil
 	}
-	panic(fmt.Errorf("internal error: vcache.loadPrimitive got unknown type %#v", p.meta.Typ))
+	panic(fmt.Errorf("internal error: vcache.loadPrimitive got unknown type ID %d", p.meta.TypeID))
 }
 
 func (p *primitive) newVector(loader *loader) vector.Any {
-	switch typ := p.meta.Typ.(type) {
+	switch typ := prim(p.meta.TypeID).(type) {
 	case *super.TypeOfUint8, *super.TypeOfUint16, *super.TypeOfUint32, *super.TypeOfUint64:
 		return vector.NewUint(typ, p.load(loader).([]uint64))
 	case *super.TypeOfInt8, *super.TypeOfInt16, *super.TypeOfInt32, *super.TypeOfInt64, *super.TypeOfDuration, *super.TypeOfTime:
@@ -132,5 +133,5 @@ func (p *primitive) newVector(loader *loader) vector.Any {
 	case *super.TypeOfNull:
 		return vector.NewNull(p.length())
 	}
-	panic(fmt.Errorf("internal error: vcache.loadPrimitive got unknown type %#v", p.meta.Typ))
+	panic(fmt.Errorf("internal error: vcache.loadPrimitive got unknown type ID %d", p.meta.TypeID))
 }

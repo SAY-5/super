@@ -90,7 +90,8 @@ func (p *ScodeEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 	}
 	off += uint64(len(p.out))
 	return off, cctx.enter(&Primitive{
-		Typ:      p.typ,
+		Kind:     "Primitive",
+		TypeID:   p.typ.ID(),
 		Location: loc,
 		Count:    p.count,
 		Min:      p.min,

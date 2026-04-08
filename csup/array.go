@@ -59,6 +59,7 @@ func (a *ArrayEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 	off, lens := a.offsets.Segment(off)
 	off, vals := a.values.Metadata(cctx, off)
 	return off, cctx.enter(&Array{
+		Kind:    "Array",
 		Length:  a.count,
 		Lengths: lens,
 		Values:  vals,
@@ -83,6 +84,7 @@ func (s *SetEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 	off, id := s.ArrayEncoder.Metadata(cctx, off)
 	array := cctx.Lookup(id).(*Array) // XXX this leaves a dummy node in the table
 	return off, cctx.enter(&Set{
+		Kind:    "Set",
 		Length:  array.Length,
 		Lengths: array.Lengths,
 		Values:  array.Values,

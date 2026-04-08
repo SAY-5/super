@@ -88,7 +88,8 @@ func (b *BytesEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 	}
 	off, offsLoc := b.offsets.Segment(off + bytesLoc.Length)
 	return off, cctx.enter(&Bytes{
-		Typ:     b.typ,
+		Kind:    "Bytes",
+		TypeID:  b.typ.ID(),
 		Bytes:   bytesLoc,
 		Offsets: offsLoc,
 		Min:     b.min,

@@ -14,6 +14,7 @@ type Metadata interface {
 }
 
 type Record struct {
+	Kind   string `json:"kind" unpack:""`
 	Length uint32
 	Fields []Field
 }
@@ -50,6 +51,7 @@ type Field struct {
 }
 
 type Array struct {
+	Kind    string `json:"kind" unpack:""`
 	Length  uint32
 	Lengths Segment
 	Values  ID
@@ -66,6 +68,7 @@ func (s *Set) Len(*Context) uint32 {
 }
 
 type Map struct {
+	Kind    string `json:"kind" unpack:""`
 	Length  uint32
 	Lengths Segment
 	Keys    ID
@@ -77,6 +80,7 @@ func (m *Map) Len(*Context) uint32 {
 }
 
 type Union struct {
+	Kind   string `json:"kind" unpack:""`
 	Length uint32
 	Tags   Segment
 	Values []ID
@@ -87,6 +91,7 @@ func (u *Union) Len(*Context) uint32 {
 }
 
 type Named struct {
+	Kind   string `json:"kind" unpack:""`
 	Name   string
 	Values ID
 }
@@ -96,6 +101,7 @@ func (n *Named) Len(cctx *Context) uint32 {
 }
 
 type Error struct {
+	Kind   string `json:"kind" unpack:""`
 	Values ID
 }
 
@@ -104,6 +110,7 @@ func (e *Error) Len(cctx *Context) uint32 {
 }
 
 type Fusion struct {
+	Kind   string `json:"kind" unpack:""`
 	Values ID
 	// Subtypes are stored as type IDs in the local context of
 	// the CSUP object in which the type appears.  vcache translates
@@ -116,7 +123,8 @@ func (f *Fusion) Len(cctx *Context) uint32 {
 }
 
 type Int struct {
-	Typ      super.Type `super:"Type"`
+	Kind     string `json:"kind" unpack:""`
+	TypeID   int
 	Location Segment
 	Min      int64
 	Max      int64
@@ -124,7 +132,15 @@ type Int struct {
 }
 
 func (i *Int) Type(*Context, *super.Context) super.Type {
-	return i.Typ
+	return primitive(i.TypeID)
+}
+
+func primitive(id int) super.Type {
+	t, err := super.LookupPrimitiveByID(id)
+	if err != nil {
+		panic(err)
+	}
+	return t
 }
 
 func (i *Int) Len(*Context) uint32 {
@@ -132,7 +148,8 @@ func (i *Int) Len(*Context) uint32 {
 }
 
 type Uint struct {
-	Typ      super.Type `super:"Type"`
+	Kind     string `json:"kind" unpack:""`
+	TypeID   int
 	Location Segment
 	Min      uint64
 	Max      uint64
@@ -140,7 +157,7 @@ type Uint struct {
 }
 
 func (u *Uint) Type(*Context, *super.Context) super.Type {
-	return u.Typ
+	return primitive(u.TypeID)
 }
 
 func (u *Uint) Len(*Context) uint32 {
@@ -148,7 +165,8 @@ func (u *Uint) Len(*Context) uint32 {
 }
 
 type Float struct {
-	Typ      super.Type `super:"Type"`
+	Kind     string `json:"kind" unpack:""`
+	TypeID   int
 	Location Segment
 	Min      float64
 	Max      float64
@@ -156,7 +174,7 @@ type Float struct {
 }
 
 func (f *Float) Type(*Context, *super.Context) super.Type {
-	return f.Typ
+	return primitive(f.TypeID)
 }
 
 func (f *Float) Len(*Context) uint32 {
@@ -164,7 +182,8 @@ func (f *Float) Len(*Context) uint32 {
 }
 
 type Bytes struct {
-	Typ     super.Type `super:"Type"`
+	Kind    string `json:"kind" unpack:""`
+	TypeID  int
 	Bytes   Segment
 	Offsets Segment
 	Min     []byte
@@ -173,7 +192,7 @@ type Bytes struct {
 }
 
 func (b *Bytes) Type(*Context, *super.Context) super.Type {
-	return b.Typ
+	return primitive(b.TypeID)
 }
 
 func (b *Bytes) Len(*Context) uint32 {
@@ -181,7 +200,8 @@ func (b *Bytes) Len(*Context) uint32 {
 }
 
 type Primitive struct {
-	Typ      super.Type `super:"Type"`
+	Kind     string `json:"kind" unpack:""`
+	TypeID   int
 	Location Segment
 	Min      *super.Value
 	Max      *super.Value
@@ -189,7 +209,7 @@ type Primitive struct {
 }
 
 func (p *Primitive) Type(*Context, *super.Context) super.Type {
-	return p.Typ
+	return primitive(p.TypeID)
 }
 
 func (p *Primitive) Len(*Context) uint32 {
@@ -197,17 +217,14 @@ func (p *Primitive) Len(*Context) uint32 {
 }
 
 type Const struct {
+	Kind   string `json:"kind" unpack:""`
 	TypeID int
 	Bytes  []byte
 	Count  uint32
 }
 
 func (c *Const) Type(*Context, *super.Context) super.Type {
-	typ, err := super.LookupPrimitiveByID(c.TypeID)
-	if err != nil {
-		panic(err)
-	}
-	return typ
+	return primitive(c.TypeID)
 }
 
 func (c *Const) Len(*Context) uint32 {
@@ -219,6 +236,7 @@ func (c *Const) Value() super.Value {
 }
 
 type Dict struct {
+	Kind   string `json:"kind" unpack:""`
 	Values ID
 	Counts Segment
 	Index  Segment
@@ -230,6 +248,7 @@ func (d *Dict) Len(*Context) uint32 {
 }
 
 type Dynamic struct {
+	Kind   string `json:"kind" unpack:""`
 	Tags   Segment
 	Values []ID
 	Length uint32
@@ -278,13 +297,13 @@ func metadataValue(cctx *Context, sctx *super.Context, b *scode.Builder, id ID, 
 		}
 		return metadataLeaf(sctx, b, min, max)
 	case *Int:
-		return metadataLeaf(sctx, b, super.NewInt(m.Typ, m.Min), super.NewInt(m.Typ, m.Max))
+		return metadataLeaf(sctx, b, super.NewInt(primitive(m.TypeID), m.Min), super.NewInt(primitive(m.TypeID), m.Max))
 	case *Uint:
-		return metadataLeaf(sctx, b, super.NewUint(m.Typ, m.Min), super.NewUint(m.Typ, m.Max))
+		return metadataLeaf(sctx, b, super.NewUint(primitive(m.TypeID), m.Min), super.NewUint(primitive(m.TypeID), m.Max))
 	case *Float:
-		return metadataLeaf(sctx, b, super.NewFloat(m.Typ, m.Min), super.NewFloat(m.Typ, m.Max))
+		return metadataLeaf(sctx, b, super.NewFloat(primitive(m.TypeID), m.Min), super.NewFloat(primitive(m.TypeID), m.Max))
 	case *Bytes:
-		return metadataLeaf(sctx, b, super.NewValue(m.Typ, m.Min), super.NewValue(m.Typ, m.Max))
+		return metadataLeaf(sctx, b, super.NewValue(primitive(m.TypeID), m.Min), super.NewValue(primitive(m.TypeID), m.Max))
 	case *Const:
 		val := m.Value()
 		return metadataLeaf(sctx, b, val, val)

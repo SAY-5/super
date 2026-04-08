@@ -58,6 +58,7 @@ func (f *FusionEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 	off, values := f.values.Metadata(cctx, off)
 	off, subtypes := f.subtypesEnc.Segment(off)
 	return off, cctx.enter(&Fusion{
+		Kind:     "Fusion",
 		Values:   values,
 		Subtypes: subtypes,
 	})
