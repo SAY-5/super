@@ -15,7 +15,7 @@ func TestContextLookupTypeNamedErrors(t *testing.T) {
 	assert.EqualError(t, err, `bad type name "\xff": invalid UTF-8`)
 
 	_, err = sctx.LookupTypeNamed("null", super.TypeNull)
-	assert.EqualError(t, err, `bad type name "null": primitive type name`)
+	assert.EqualError(t, err, `named type collides with primitive type: null`)
 }
 
 func TestContextLookupTypeNamedAndLookupTypeDef(t *testing.T) {

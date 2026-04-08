@@ -235,7 +235,7 @@ func (c *Context) LookupTypeNamed(name string, inner Type) (*TypeNamed, error) {
 		return nil, fmt.Errorf("bad type name %q: invalid UTF-8", name)
 	}
 	if LookupPrimitive(name) != nil {
-		return nil, fmt.Errorf("bad type name %q: primitive type name", name)
+		return nil, fmt.Errorf("named type collides with primitive type: %s", name)
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
