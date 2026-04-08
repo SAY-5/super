@@ -35,9 +35,11 @@ func (d *DictEncoder) Encode(group *errgroup.Group) {
 			return nil
 		}
 		if len(counts) == 1 {
+			val := d.ConstValue()
 			d.const_ = &Const{
-				Value: d.ConstValue(),
-				Count: uint32(len(index)),
+				TypeID: super.TypeID(val.Type()),
+				Bytes:  val.Bytes(),
+				Count:  uint32(len(index)),
 			}
 			return nil
 		}

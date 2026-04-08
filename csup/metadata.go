@@ -5,6 +5,7 @@ import (
 
 	"github.com/brimdata/super"
 	"github.com/brimdata/super/pkg/field"
+	"github.com/brimdata/super/pkg/unpack"
 	"github.com/brimdata/super/scode"
 )
 
@@ -196,12 +197,13 @@ func (p *Primitive) Len(*Context) uint32 {
 }
 
 type Const struct {
-	Value super.Value // this value lives in local context and needs to be translated by shadow
-	Count uint32
+	TypeID int
+	Bytes  []byte
+	Count  uint32
 }
 
-func (c *Const) Type(_ *Context, sctx *super.Context) super.Type {
-	typ, err := sctx.TranslateType(c.Value.Type())
+func (c *Const) Type(*Context, *super.Context) super.Type {
+	typ, err := super.LookupPrimitiveByID(c.TypeID)
 	if err != nil {
 		panic(err)
 	}
@@ -210,6 +212,10 @@ func (c *Const) Type(_ *Context, sctx *super.Context) super.Type {
 
 func (c *Const) Len(*Context) uint32 {
 	return c.Count
+}
+
+func (c *Const) Value() super.Value {
+	return super.NewValue(c.Type(nil, nil), c.Bytes)
 }
 
 type Dict struct {
@@ -280,7 +286,8 @@ func metadataValue(cctx *Context, sctx *super.Context, b *scode.Builder, id ID, 
 	case *Bytes:
 		return metadataLeaf(sctx, b, super.NewValue(m.Typ, m.Min), super.NewValue(m.Typ, m.Max))
 	case *Const:
-		return metadataLeaf(sctx, b, m.Value, m.Value)
+		val := m.Value()
+		return metadataLeaf(sctx, b, val, val)
 	default:
 		b.Append(nil)
 		return super.TypeNull
@@ -304,7 +311,7 @@ func indexOfField(name string, fields []Field) int {
 	})
 }
 
-var Template = []any{
+var unpacker = unpack.New(
 	Record{},
 	Array{},
 	Set{},
@@ -321,4 +328,4 @@ var Template = []any{
 	Dict{},
 	Dynamic{},
 	Fusion{},
-}
+)
