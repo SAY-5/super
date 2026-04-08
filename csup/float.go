@@ -61,7 +61,8 @@ func (u *FloatEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 	}
 	off += loc.Length
 	return off, cctx.enter(&Float{
-		Typ:      u.typ,
+		Kind:     "Float",
+		TypeID:   u.typ.ID(),
 		Location: loc,
 		Min:      u.min,
 		Max:      u.max,

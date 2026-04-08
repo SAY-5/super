@@ -28,7 +28,7 @@ func (c *const_) project(loader *loader, projection field.Projection) vector.Any
 	}
 	// Map the const super.Value in the csup's type context to
 	// a new one in the query type context.
-	val := c.meta.Value
+	val := c.meta.Value()
 	if val.IsNull() {
 		return vector.NewNull(c.length())
 	}

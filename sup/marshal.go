@@ -252,6 +252,19 @@ func (m *MarshalBSUPContext) NamedBindings(bindings []Binding) error {
 	return nil
 }
 
+type Any struct {
+	Type  []byte
+	Bytes []byte
+}
+
+func (a *Any) Value(sctx *super.Context) super.Value {
+	typ, err := sctx.LookupByValue(a.Type)
+	if err != nil {
+		panic(err)
+	}
+	return super.NewValue(typ, a.Bytes)
+}
+
 var nanoTsType = reflect.TypeFor[nano.Ts]()
 var superValueType = reflect.TypeFor[super.Value]()
 
@@ -298,12 +311,17 @@ func (m *MarshalBSUPContext) encodeAny(v reflect.Value) (super.Type, error) {
 		m.Builder.Append(val.Bytes())
 		return val.Type(), nil
 	case super.Value:
-		typ, err := m.TranslateType(v.Type())
-		if err != nil {
-			return nil, err
-		}
+		// Encoded as {Type:<type>,Bytes:bytes}
+		anyType := m.Context.MustLookupTypeRecord([]super.Field{
+			super.NewField("Type", super.TypeType),
+			super.NewField("Bytes", super.TypeBytes),
+		})
+		m.Builder.BeginContainer()
+		typeVal := m.Context.LookupTypeValue(v.Type())
+		m.Builder.Append(typeVal.Bytes())
 		m.Builder.Append(v.Bytes())
-		return typ, nil
+		m.Builder.EndContainer()
+		return anyType, nil
 	}
 	switch v.Kind() {
 	case reflect.Array:
@@ -707,7 +725,29 @@ func (u *UnmarshalBSUPContext) decodeAny(val super.Value, v reflect.Value) (x er
 		return nil
 	case super.Value:
 		// For super.Values we simply set the reflect value to the
-		// super.Value that has been decoded.
+		// a super.Value we create from the underlying Typeval/Bytes structure.
+		recType, ok := val.Type().(*super.TypeRecord)
+		if !ok || len(recType.Fields) != 2 || recType.Fields[0].Name != "Type" || recType.Fields[0].Type != super.TypeType || recType.Fields[1].Name != "Bytes" || recType.Fields[1].Type != super.TypeBytes {
+			return errors.New("super value is not type {Type:type,Bytes:byte}")
+		}
+		it := scode.NewRecordIter(val.Bytes(), 0)
+		if it.Done() {
+			return errors.New("malformed super value")
+		}
+		bytes, _ := it.Next(false)
+		//XXX
+		if u.sctx == nil {
+			u.sctx = super.NewContext()
+		}
+		typ, err := u.sctx.LookupByValue(bytes)
+		if err != nil {
+			return err
+		}
+		if it.Done() {
+			return errors.New("malformed super value")
+		}
+		bytes, _ = it.Next(false)
+		val := super.NewValue(typ, bytes)
 		v.Set(reflect.ValueOf(val.Copy()))
 		return nil
 	}

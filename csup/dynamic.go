@@ -97,6 +97,7 @@ func (d *DynamicEncoder) Encode() (ID, uint64, error) {
 		values = append(values, id)
 	}
 	return d.cctx.enter(&Dynamic{
+		Kind:   "Dynamic",
 		Tags:   tags,
 		Values: values,
 		Length: d.len,

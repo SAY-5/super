@@ -60,7 +60,8 @@ func (i *IntEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 	}
 	off += loc.MemLength
 	return off, cctx.enter(&Int{
-		Typ:      i.typ,
+		Kind:     "Int",
+		TypeID:   i.typ.ID(),
 		Location: loc,
 		Min:      i.min,
 		Max:      i.max,
@@ -141,7 +142,8 @@ func (u *UintEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 	}
 	off += loc.MemLength
 	return off, cctx.enter(&Uint{
-		Typ:      u.typ,
+		Kind:     "Uint",
+		TypeID:   u.typ.ID(),
 		Location: loc,
 		Min:      u.min,
 		Max:      u.max,

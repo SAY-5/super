@@ -2,13 +2,13 @@ package csup
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 
 	"github.com/brimdata/super"
 	"github.com/brimdata/super/sio"
 	"github.com/brimdata/super/sio/bsupio"
-	"github.com/brimdata/super/sup"
 	"github.com/brimdata/super/vector"
 	"github.com/brimdata/super/vector/vio"
 )
@@ -60,13 +60,19 @@ func (w *Serializer) finalizeObject() error {
 	zw := bsupio.NewWriter(sio.NopCloser(&metaBuf))
 	// First, we write the root segmap of the vector of integer type IDs.
 	cctx := w.dynamic.cctx
-	m := sup.NewBSUPMarshalerWithContext(cctx.local)
-	m.Decorate(sup.StyleSimple)
 	for id := range len(cctx.metas) {
-		val, err := m.Marshal(cctx.Lookup(ID(id)))
+		// XXX we used to marshal straight to BSUP values but with the change
+		// to immutable named types, the mess we had that would represent sum types
+		// with variable bindings to named concrete types no longer works.  This
+		// will eventually be possible with named sum types (i.e., the sum type
+		// becomes the set of all the types in the marshaling template) but this
+		// hasn't been implemented.  For now, we're putting in some JSON scaffolding.
+		// (The AST should also switch over to sup marshaler after this work is done.)
+		b, err := json.Marshal(cctx.Lookup(ID(id)))
 		if err != nil {
 			return fmt.Errorf("could not marshal CSUP metadata: %w", err)
 		}
+		val := super.NewValue(super.TypeBytes, b)
 		if err := zw.Write(val); err != nil {
 			return fmt.Errorf("could not write CSUP metadata: %w", err)
 		}

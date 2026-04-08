@@ -110,6 +110,7 @@ func (u *UnionEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 		values = append(values, id)
 	}
 	return off, cctx.enter(&Union{
+		Kind:   "Union",
 		Tags:   tags,
 		Values: values,
 		Length: u.count,

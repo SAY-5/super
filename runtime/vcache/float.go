@@ -3,6 +3,7 @@ package vcache
 import (
 	"sync"
 
+	"github.com/brimdata/super"
 	"github.com/brimdata/super/csup"
 	"github.com/brimdata/super/pkg/byteconv"
 	"github.com/brimdata/super/pkg/field"
@@ -30,7 +31,15 @@ func (f *float) project(loader *loader, projection field.Projection) vector.Any 
 	if len(projection) > 0 {
 		return vector.NewMissing(loader.sctx, f.length())
 	}
-	return vector.NewFloat(f.meta.Typ, f.load(loader))
+	return vector.NewFloat(prim(f.meta.TypeID), f.load(loader))
+}
+
+func prim(id int) super.Type {
+	typ, err := super.LookupPrimitiveByID(id)
+	if err != nil {
+		panic(err)
+	}
+	return typ
 }
 
 func (f *float) load(loader *loader) []float64 {

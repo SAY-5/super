@@ -31,7 +31,7 @@ func (i *int_) project(loader *loader, projection field.Projection) vector.Any {
 	if len(projection) > 0 {
 		return vector.NewMissing(loader.sctx, i.length())
 	}
-	return vector.NewInt(i.meta.Typ, i.load(loader))
+	return vector.NewInt(prim(i.meta.TypeID), i.load(loader))
 }
 
 func (i *int_) load(loader *loader) []int64 {

@@ -35,9 +35,12 @@ func (d *DictEncoder) Encode(group *errgroup.Group) {
 			return nil
 		}
 		if len(counts) == 1 {
+			val := d.ConstValue()
 			d.const_ = &Const{
-				Value: d.ConstValue(),
-				Count: uint32(len(index)),
+				Kind:   "Const",
+				TypeID: super.TypeID(val.Type()),
+				Bytes:  val.Bytes(),
+				Count:  uint32(len(index)),
 			}
 			return nil
 		}
@@ -65,7 +68,7 @@ func (d *DictEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 	if d.counts == nil {
 		return d.PrimitiveEncoder.Metadata(cctx, off)
 	}
-	meta := &Dict{Length: uint32(len(d.index))}
+	meta := &Dict{Kind: "Dict", Length: uint32(len(d.index))}
 	off, meta.Values = d.PrimitiveEncoder.Metadata(cctx, off)
 	off, meta.Counts = d.counts.Segment(off)
 	len := uint64(len(d.index))

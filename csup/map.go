@@ -49,6 +49,7 @@ func (m *MapEncoder) Metadata(cctx *Context, off uint64) (uint64, ID) {
 	off, keys := m.keys.Metadata(cctx, off)
 	off, vals := m.values.Metadata(cctx, off)
 	return off, cctx.enter(&Map{
+		Kind:    "Map",
 		Lengths: lens,
 		Keys:    keys,
 		Values:  vals,

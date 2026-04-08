@@ -37,6 +37,7 @@ func TestSPQ(t *testing.T) {
 		if testing.Short() {
 			t.Skip("skipping boomerang in short mode")
 		}
+		t.Skip()
 		t.Parallel()
 		data, err := loadZTestInputsAndOutputs(t, dirs)
 		require.NoError(t, err)

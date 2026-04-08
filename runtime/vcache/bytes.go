@@ -31,7 +31,7 @@ func (b *bytes) project(loader *loader, projection field.Projection) vector.Any 
 		return vector.NewMissing(loader.sctx, b.length())
 	}
 	table := b.load(loader)
-	switch b.meta.Typ.ID() {
+	switch b.meta.TypeID {
 	case super.IDString:
 		return vector.NewString(table)
 	case super.IDBytes:
@@ -39,7 +39,7 @@ func (b *bytes) project(loader *loader, projection field.Projection) vector.Any 
 	case super.IDType:
 		return vector.NewTypeValue(table)
 	default:
-		panic(b.meta.Typ)
+		panic(b.meta.TypeID)
 	}
 }
 
