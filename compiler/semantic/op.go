@@ -1355,13 +1355,17 @@ func (t *translator) typeDecl(d *ast.TypeDecl) {
 		t.error(d.Type, err)
 		typ = "null"
 	}
+	// XXX This is hokey.  We should
 	e := &sem.PrimitiveExpr{
 		Node:  d.Name,
 		Value: fmt.Sprintf("<%s=%s>", sup.QuotedName(d.Name.Name), typ),
 	}
 	val, ok := t.mustEval(e)
 	if !ok {
-		panic(e)
+		//XXX we should have a way to signal the redeclaration vs
+		// some other problem
+		t.error(d.Name, errors.New("type redeclared"))
+		return
 	}
 	e.Value = sup.FormatValue(val)
 	if err := t.scope.BindSymbol(d.Name.Name, e); err != nil {

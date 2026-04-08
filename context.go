@@ -242,11 +242,16 @@ func (c *Context) LookupTypeNamed(name string, inner Type) (*TypeNamed, error) {
 	if c.named == nil {
 		c.named = make(map[string]*TypeNamed)
 	}
+	if typ, ok := c.named[name]; ok {
+		if typ.Type != inner {
+			return nil, fmt.Errorf("type %q already exists", name)
+		}
+		return typ, nil
+	}
 	id := c.typedefs.LookupTypeNamed(name, inner)
-	if typ, ok := c.byID[id]; ok {
-		named := typ.(*TypeNamed)
-		c.named[name] = named
-		return named, nil
+	if _, ok := c.byID[id]; ok {
+		//XXX if it wasn't in the named table, it can't be in byID table
+		panic(name)
 	}
 	typ := NewTypeNamed(int(id), name, inner)
 	c.byID[id] = typ
