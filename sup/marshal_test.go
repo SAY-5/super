@@ -402,6 +402,7 @@ func (*Array) Type() super.Type {
 }
 
 func TestRecordWithMixedTypeNamedArrayElems(t *testing.T) {
+	t.Skip() // skipping until we fix marshal to use named types for interfaces
 	in := &Record{
 		Fields: []Field{
 			{

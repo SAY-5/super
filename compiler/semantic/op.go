@@ -1362,9 +1362,8 @@ func (t *translator) typeDecl(d *ast.TypeDecl) {
 	}
 	val, ok := t.mustEval(e)
 	if !ok {
-		//XXX we should have a way to signal the redeclaration vs
-		// some other problem
-		t.error(d.Name, errors.New("type redeclared"))
+		// When this fails (e.., type redeclared), the error is already logged
+		// so we just return here.
 		return
 	}
 	e.Value = sup.FormatValue(val)
