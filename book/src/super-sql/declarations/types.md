@@ -82,8 +82,8 @@ values {str:cast(this, 'foo'), named:cast(this, foo)}
 1
 2
 # expected output
-{str:1::=foo,named:1::=foo}
-{str:2::=foo,named:2::=foo}
+{str:1::=foo,named:1::foo}
+{str:2::=foo,named:2::foo}
 ```
 
 ---
