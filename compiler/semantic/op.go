@@ -1355,7 +1355,6 @@ func (t *translator) typeDecl(d *ast.TypeDecl) {
 		t.error(d.Type, err)
 		typ = "null"
 	}
-	// XXX This is hokey.  We should
 	e := &sem.PrimitiveExpr{
 		Node:  d.Name,
 		Value: fmt.Sprintf("<%s=%s>", sup.QuotedName(d.Name.Name), typ),

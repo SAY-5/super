@@ -638,8 +638,3 @@ func TestSuperValues(t *testing.T) {
 		test(t, "record", "{value:{foo:1,bar:\"baz\"}}", &teststruct)
 	})
 }
-
-type Tmp struct {
-	X   int64
-	Val super.Value
-}
