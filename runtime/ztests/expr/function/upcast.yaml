@@ -11,9 +11,9 @@ input: |
   [[[1::=n51]::=n52]::=n53,<n54=[n55=[n56=int64]]>]
   [|[|[1::=n61]|::=n62]|::=n63,<n64=|[n65=|[n66=int64]|]|>]
   [|{1::=n71:2::=n72}|::=n73,<n74=|{n75=int64:n76=int64}|>]
-  [1::=n81::(n82=n81|(n83=string)),<n84=(n85=int64)|(n86=string)>]
+  [1::(n81=(n82=int64)),<(n81=(n82=int64))|(n83=string)>]
   ["a"::n91=enum(a,b),<n92=enum(a,b)>]
-  [1::=n101,<fusion((n1=int64)|string)>]
+  [1::=n101,<fusion((n101=int64)|string)>]
 
 output: |
   error({message:"upcast: value not a subtype of [int8|string]",on:[1,"a"]})
@@ -23,9 +23,9 @@ output: |
   [[1::=n56]::=n55]::=n54
   |[|[1::=n66]|::=n65]|::=n64
   |{1::=n75:2::=n76}|::=n74
-  1::=n85::(n84=n85|(n86=string))
+  1::(n81=n82=int64)::(n81|(n83=string))
   "a"::(n92=enum(a,b))
-  fusion(1::(int64|string),<n101=int64>)
+  fusion(1::=n101::(n101|string),<n101=int64>)
 
 ---
 
