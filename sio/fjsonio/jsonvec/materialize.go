@@ -210,7 +210,7 @@ func (m *materializer) makeRecordSubtypes(perm map[string]uint32, fields []super
 	for i, tag := range tags {
 		scratch = scratch[:0]
 		for _, col := range templates[tag] {
-			if dynamic[col] != nil {
+			if len(dynamic[col]) != 0 {
 				scratch = append(scratch, dynamic[col][0])
 				dynamic[col] = dynamic[col][1:]
 			} else {
