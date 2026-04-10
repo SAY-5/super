@@ -3,7 +3,6 @@ package sup_test
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"math"
 	"net/netip"
 	"strings"
@@ -643,18 +642,4 @@ func TestSuperValues(t *testing.T) {
 type Tmp struct {
 	X   int64
 	Val super.Value
-}
-
-func TestTmp(t *testing.T) {
-	t1 := Tmp{X: 2, Val: super.NewFloat64(1.5)}
-	m := sup.NewBSUPMarshaler()
-	m.Decorate(sup.StyleSimple)
-	val, _ := m.Marshal(t1)
-	fmt.Println("VAL", sup.String(val))
-	var tmp2 Tmp
-	u := sup.NewBSUPUnmarshaler()
-	err := u.Unmarshal(val, &tmp2)
-	require.NoError(t, err)
-	fmt.Println("VAL", sup.String(tmp2.Val))
-	assert.Equal(t, 1, 2)
 }
