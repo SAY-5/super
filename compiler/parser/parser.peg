@@ -190,7 +190,7 @@ SearchExpr
       return &ast.SearchTermExpr{
         Kind: "SearchTermExpr",
         Text: string(c.text),
-        Value: v.(ast.Any),
+        Value: v.(ast.Value),
         Loc: loc(c),
       }, nil
     }
@@ -1425,7 +1425,7 @@ TypeLiteral
     }
 
 TypeAsValue
-  = "=" name:Name { return newPrimitive(c, "string", name.(*ast.Text).Text), nil }
+  = "=" name:Name { return newPrimitive(c, "string", name.(*ast.Text).Text), nil } //XXX
   / t:EasyType {
       return &ast.TypeValue{
         Kind:"TypeValue",
@@ -1440,16 +1440,8 @@ Type
 
 ComponentType
   = EasyType
-  / name:Name opt:(__ '=' __ Type)? {
-      if opt != nil {
-        return &ast.TypeDef{
-            Kind: "TypeDef",
-            Name: name.(*ast.Text).Text,
-            Type: opt.([]any)[3].(ast.Type),
-            Loc: loc(c),
-        }, nil
-      }
-      return &ast.TypeName{Kind: "TypeName", Name: name.(*ast.Text).Text, Loc: loc(c)}, nil
+  / name:Name {
+      return &ast.TypeRef{Kind: "TypeRef", Name: name.(*ast.Text).Text, Loc: loc(c)}, nil
     }
 
 EasyType

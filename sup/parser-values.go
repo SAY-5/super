@@ -2,6 +2,7 @@ package sup
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/netip"
@@ -15,7 +16,7 @@ import (
 )
 
 func (p *Parser) ParseValue() (ast.Value, error) {
-	v, err := p.matchValue()
+	v, err := p.matchOuterValue()
 	if err == io.EOF {
 		err = nil
 	}
@@ -37,74 +38,102 @@ func noEOF(err error) error {
 	return err
 }
 
+func (p *Parser) matchOuterValue() (ast.Value, error) {
+	var decls []ast.TypeDecl
+	for {
+		val, decl, err := p.matchValueOrDecl()
+		if noEOF(err) != nil { //XXX noeof
+			return nil, err
+		}
+		if decl != nil {
+			decls = append(decls, *decl)
+			continue
+		}
+		if val == nil {
+			return nil, nil
+		}
+		if len(decls) != 0 {
+			val = &ast.DeclsValue{
+				Kind:  "DeclsValue",
+				Decls: decls,
+				Value: val,
+			}
+		}
+		return val, nil
+	}
+}
+
 func (p *Parser) matchValue() (ast.Value, error) {
+	val, decl, err := p.matchValueOrDecl()
+	if noEOF(err) != nil {
+		return nil, err
+	}
+	if decl != nil {
+		return nil, errors.New("invalid type declaration inside value")
+	}
+	return val, nil
+}
+
+func (p *Parser) matchValueOrDecl() (ast.Value, *ast.TypeDecl, error) {
 	if val, err := p.matchRecord(); val != nil || err != nil {
-		return p.decorate(val, err)
+		val, err := p.decorate(val, err)
+		return val, nil, err
 	}
 	if val, err := p.matchArray(); val != nil || err != nil {
-		return p.decorate(val, err)
+		val, err := p.decorate(val, err)
+		return val, nil, err
 	}
 	if val, err := p.matchSetOrMap(); val != nil || err != nil {
-		return p.decorate(val, err)
+		val, err := p.decorate(val, err)
+		return val, nil, err
 	}
 	if val, err := p.matchTypeValue(); val != nil || err != nil {
-		return p.decorate(val, err)
+		val, err := p.decorate(val, err)
+		return val, nil, err
 	}
 	// Primitive comes last as the other matchers short-circuit more
 	// efficiently on sentinel characters.
 	if val, err := p.matchPrimitive(); val != nil || err != nil {
-		return p.decorate(val, err)
+		val, err := p.decorate(val, err)
+		return val, nil, err
 	}
 	name, err := p.matchIdentifier()
 	if err != nil {
-		return nil, noEOF(err)
+		return nil, nil, noEOF(err)
+	}
+	if typ, err := p.matchTypeDecl(name); typ != nil || err != nil {
+		return nil, typ, err
 	}
 	if val, err := p.matchFusion(name); val != nil || err != nil {
-		return p.decorate(val, err)
+		val, err := p.decorate(val, err)
+		return val, nil, err
 	}
 	if val, err := p.matchError(name); val != nil || err != nil {
-		return p.decorate(val, err)
+		val, err := p.decorate(val, err)
+		return val, nil, err
 	}
-	return nil, nil
+	//XXX this leads to success when nothing matches at EOF... there's a bug
+	// here to fix; maybe problem is matchIdentifier above at EOF
+	return nil, nil, nil
 }
 
-func anyAsValue(any ast.Any) *ast.ImpliedValue {
-	return &ast.ImpliedValue{
-		Kind: "ImpliedValue",
-		Of:   any,
-	}
-}
-
-func (p *Parser) decorate(any ast.Any, err error) (ast.Value, error) {
+func (p *Parser) decorate(val ast.Value, err error) (ast.Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	// See if there's a first decorator.
-	val, ok, err := p.matchDecorator(any, nil)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		// No decorator.  Just return the input value.
-		return anyAsValue(any), nil
-	}
-	// Now see if there are additional decorators to apply as casts and
-	// return value chain, wrapped if at all, as an ast.Value.
 	for {
-		outer, ok, err := p.matchDecorator(nil, val)
+		decorated, ok, err := p.matchDecorator(val)
 		if err != nil {
 			return nil, err
 		}
 		if !ok {
 			return val, nil
 		}
-		val = outer
+		val = decorated
 	}
 }
 
-// We pass both any and val in here to avoid having to backtrack.
-// If we had proper backtracking, this would look a little more sensible.
-func (p *Parser) matchDecorator(any ast.Any, val ast.Value) (ast.Value, bool, error) {
+func (p *Parser) matchDecorator(val ast.Value) (ast.Value, bool, error) {
 	l := p.lexer
 	// If there isn't a decorator, just return.  A decorator cannot start
 	// with ":::" so we check this condition which arises when an IP6 address or net
@@ -114,49 +143,22 @@ func (p *Parser) matchDecorator(any ast.Any, val ast.Value) (ast.Value, bool, er
 		return nil, false, err
 	}
 	l.skip(2)
-	val, err := p.parseDecorator(any, val)
+	ok, err := l.match('=')
+	if err != nil {
+		return nil, false, err
+	}
+	if ok {
+		return nil, false, errors.New("embedded type syntax ::=<type> no longer supported")
+	}
+	typ, err := p.matchTypeComponent()
 	if noEOF(err) != nil {
 		return nil, false, err
 	}
-	return val, true, nil
-}
-
-func (p *Parser) parseDecorator(any ast.Any, val ast.Value) (ast.Value, error) {
-	l := p.lexer
-	// We can have either:
-	//   Case 1: =<name>
-	//   Case 2: <type-component> (unions and typedefs with unions must have parens)
-	ok, err := l.match('=')
-	if err != nil {
-		return nil, err
-	}
-	if ok {
-		name, err := l.scanTypeName()
-		if name == "" || err != nil {
-			return nil, p.error("bad short-form type definition")
-		}
-		return &ast.DefValue{
-			Kind:     "DefValue",
-			Of:       any,
-			TypeName: name,
-		}, nil
-	}
-	typ, err := p.matchTypeComponent()
-	if err != nil {
-		return nil, err
-	}
-	if any != nil {
-		return &ast.CastValue{
-			Kind: "CastValue",
-			Of:   anyAsValue(any),
-			Type: typ,
-		}, nil
-	}
-	return &ast.CastValue{
-		Kind: "CastValue",
-		Of:   val,
-		Type: typ,
-	}, nil
+	return &ast.Decorated{
+		Kind:  "Decorated",
+		Value: val,
+		Type:  typ,
+	}, true, nil
 }
 
 func (p *Parser) matchPrimitive() (*ast.Primitive, error) {
@@ -427,7 +429,7 @@ func (p *Parser) matchValueList() ([]ast.Value, error) {
 	return vals, nil
 }
 
-func (p *Parser) matchSetOrMap() (ast.Any, error) {
+func (p *Parser) matchSetOrMap() (ast.Value, error) {
 	l := p.lexer
 	if ok, err := l.match('|'); !ok || err != nil {
 		return nil, noEOF(err)
@@ -436,7 +438,7 @@ func (p *Parser) matchSetOrMap() (ast.Any, error) {
 	if err != nil {
 		return nil, err
 	}
-	var val ast.Any
+	var val ast.Value
 	var which string
 	if isSet {
 		which = "set"
@@ -561,6 +563,38 @@ func (p *Parser) matchError(name string) (*ast.Error, error) {
 	}, nil
 }
 
+func (p *Parser) matchTypeDecl(keyword string) (*ast.TypeDecl, error) {
+	if keyword != "type" {
+		return nil, nil
+	}
+	name, err := p.matchIdentifier()
+	if err != nil {
+		if err == io.EOF {
+			return nil, errors.New("incomplete type definition at EOF")
+		}
+		return nil, err
+	}
+	l := p.lexer
+	if ok, err := l.match('='); !ok || err != nil {
+		if err == io.EOF {
+			return nil, errors.New("incomplete type definition at EOF")
+		}
+		return nil, err
+	}
+	typ, err := p.matchType()
+	if err != nil {
+		if err == io.EOF {
+			return nil, errors.New("incomplete type definition at EOF")
+		}
+		return nil, err
+	}
+	return &ast.TypeDecl{
+		Kind: "TypeDecl",
+		Name: &ast.ID{Name: name},
+		Type: typ,
+	}, nil
+}
+
 func (p *Parser) matchFusion(name string) (*ast.Fusion, error) {
 	if name != "fusion" {
 		return nil, nil
@@ -618,7 +652,7 @@ func ParsePrimitive(typeText, valText string) (super.Value, error) {
 		return super.Null, fmt.Errorf("no such type: %s", typeText)
 	}
 	var b scode.Builder
-	if err := BuildPrimitive(&b, Primitive{Type: typ, Text: valText}); err != nil {
+	if err := BuildPrimitive(&b, Primitive{typ: typ, text: valText}); err != nil {
 		return super.Null, err
 	}
 	it := b.Bytes().Iter()

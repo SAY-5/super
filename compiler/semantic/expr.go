@@ -20,6 +20,8 @@ import (
 	"github.com/shellyln/go-sql-like-expr/likeexpr"
 )
 
+// XXX change t.checker.unknown to fusion(all)
+
 func (t *translator) expr(e ast.Expr, inType super.Type) (sem.Expr, super.Type) {
 	switch e := e.(type) {
 	case *ast.AggFuncExpr:
@@ -329,12 +331,16 @@ func (t *translator) expr(e ast.Expr, inType super.Type) (sem.Expr, super.Type) 
 			}
 			val = sup.FormatValue(v)
 		case *ast.TypeValue:
-			tv, err := t.semType(term.Value)
+			typRef, err := t.semType(term.Value)
 			if err != nil {
 				t.error(e, err)
 				return badExpr, t.checker.unknown
 			}
-			val = "<" + tv + ">"
+			typ, err := t.defs.LookupType(typRef.(*sem.TypeExpr).ID)
+			if err != nil {
+				panic(err)
+			}
+			val = "<" + sup.FormatType(typ) + ">"
 		default:
 			panic(fmt.Errorf("unexpected term value: %s (%T)", e.Kind, e))
 		}
@@ -401,21 +407,18 @@ func (t *translator) expr(e ast.Expr, inType super.Type) (sem.Expr, super.Type) 
 			Elems: elems,
 		}, t.sctx.MustLookupTypeRecord(fields)
 	case *ast.TypeValue:
+		typRef, err := t.semType(e.Value)
+		if err != nil {
+			t.error(e, err)
+			return badExpr, t.checker.unknown
+		}
+		typ, err := t.defs.LookupType(typRef.(*sem.TypeExpr).ID)
+		if err != nil {
+			panic(err)
+		}
+
 		typ, err := t.semType(e.Value)
 		if err != nil {
-			// If this is a type name, then we check to see if it's in the
-			// context because it has been defined locally.  If not, then
-			// the type needs to come from the data, in which case we replace
-			// the literal reference with a typename() call.
-			// Note that we just check the top value here but there can be
-			// nested dynamic type references inside a complex type; this
-			// is not yet supported and will fail here with a compile-time error
-			// complaining about the type not existing.
-			// XXX See issue #3413
-			if e := semDynamicType(e, e.Value); e != nil {
-				return e, super.TypeType
-			}
-			t.error(e, err)
 			return badExpr, t.checker.unknown
 		}
 		return &sem.PrimitiveExpr{
@@ -545,8 +548,8 @@ func (t *translator) existsExpr(e *ast.ExistsExpr, inType super.Type) (sem.Expr,
 }
 
 func semDynamicType(n ast.Node, tv ast.Type) *sem.CallExpr {
-	if typeName, ok := tv.(*ast.TypeName); ok {
-		return dynamicTypeName(n, typeName.Name)
+	if ref, ok := tv.(*ast.TypeRef); ok {
+		return dynamicTypeName(n, ref.Name)
 	}
 	return nil
 }
@@ -1221,12 +1224,15 @@ func DotExprToFieldPath(e ast.Expr) *sem.ThisExpr {
 	return nil
 }
 
-func (t *translator) semType(typ ast.Type) (string, error) {
-	ztype, err := sup.TranslateType(t.sctx, typ)
+func (t *translator) semType(typ ast.Type) (sem.Expr, error) {
+	id, err := t.types.LookupType(typ)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return sup.FormatType(ztype), nil
+	return &sem.TypeExpr{
+		Node: typ,
+		ID:   id,
+	}, nil
 }
 
 func (t *translator) arrayElems(elems []ast.ArrayElem, inType super.Type) ([]sem.ArrayElem, super.Type) {

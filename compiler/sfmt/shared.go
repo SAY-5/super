@@ -72,11 +72,7 @@ func (s *shared) typ(t ast.Type) {
 		s.write(":")
 		s.typ(t.ValType)
 		s.write("}|")
-	case *ast.TypeDef:
-		s.write("%s=(", t.Name)
-		s.typ(t.Type)
-		s.write(")")
-	case *ast.TypeName:
+	case *ast.TypeRef:
 		s.write(t.Name)
 	case *ast.TypeError:
 		s.write("error(")

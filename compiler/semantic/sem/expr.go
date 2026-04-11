@@ -121,6 +121,10 @@ type (
 		ast.Node
 		Path []string
 	}
+	TypeExpr struct {
+		ast.Node
+		ID int
+	}
 	UnaryExpr struct {
 		ast.Node
 		Op      string
@@ -198,6 +202,7 @@ func (*SetExpr) exprNode()          {}
 func (*SliceExpr) exprNode()        {}
 func (*SubqueryExpr) exprNode()     {}
 func (*ThisExpr) exprNode()         {}
+func (*TypeExpr) exprNode()         {}
 func (*UnaryExpr) exprNode()        {}
 
 // FuncRef is a pseudo-expression that represents a function reference as a value.

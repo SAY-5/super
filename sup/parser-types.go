@@ -2,6 +2,7 @@ package sup
 
 import (
 	"errors"
+	"unicode"
 
 	"github.com/brimdata/super"
 	"github.com/brimdata/super/compiler/ast"
@@ -67,7 +68,7 @@ func (p *Parser) matchTypeName() (ast.Type, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !(idChar(r) || isDigit(r) || r == '"') {
+	if !(idChar(r) || unicode.IsDigit(r) || r == '"') {
 		return nil, nil
 	}
 	name, err := l.scanTypeName()
@@ -86,20 +87,7 @@ func (p *Parser) matchTypeName() (ast.Type, error) {
 	if t := super.LookupPrimitive(name); t != nil {
 		return &ast.TypePrimitive{Kind: "TypePrimitive", Name: name}, nil
 	}
-	// Wherever we have a type name, we can have a type def defining the
-	// type name.
-	if ok, err := l.match('='); !ok || err != nil {
-		return &ast.TypeName{Kind: "TypeName", Name: name}, nil
-	}
-	typ, err := p.parseType()
-	if err != nil {
-		return nil, err
-	}
-	return &ast.TypeDef{
-		Kind: "TypeDef",
-		Name: name,
-		Type: typ,
-	}, nil
+	return &ast.TypeRef{Kind: "TypeRef", Name: name}, nil
 }
 
 func (p *Parser) matchTypeRecord() (*ast.TypeRecord, error) {
@@ -284,6 +272,10 @@ func (p *Parser) matchTypeParens() (ast.Type, error) {
 	if err != nil {
 		return nil, err
 	}
+	if ok, _ := l.match('='); ok {
+		return nil, p.error("value embedded type declarations at '=' no longer supported")
+	}
+
 	ok, err := l.match(')')
 	if err != nil {
 		return nil, err

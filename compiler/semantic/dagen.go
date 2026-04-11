@@ -24,7 +24,7 @@ func newDagen(r reporter) *dagen {
 	}
 }
 
-func (d *dagen) assemble(seq sem.Seq, funcs map[string]*funcDef) *dag.Main {
+func (d *dagen) assemble(seq sem.Seq, types []byte, funcs map[string]*funcDef) *dag.Main {
 	dagSeq := d.seq(seq)
 	dagSeq = d.checkOutputs(true, dagSeq)
 	dagFuncs := make([]*dag.FuncDef, 0, len(d.funcs))
@@ -35,7 +35,7 @@ func (d *dagen) assemble(seq sem.Seq, funcs map[string]*funcDef) *dag.Main {
 	slices.SortFunc(dagFuncs, func(a, b *dag.FuncDef) int {
 		return strings.Compare(a.Tag, b.Tag)
 	})
-	return &dag.Main{Funcs: dagFuncs, Body: dagSeq}
+	return &dag.Main{Types: types, Funcs: dagFuncs, Body: dagSeq}
 }
 
 func (d *dagen) assembleExpr(e sem.Expr, funcs map[string]*funcDef) *dag.MainExpr {
