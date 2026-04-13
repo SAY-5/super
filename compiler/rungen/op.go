@@ -156,9 +156,12 @@ func (b *Builder) compileMain(main *dag.Main, parents []sbuf.Puller) ([]sbuf.Pul
 }
 
 func (b *Builder) lookupType(id int) (super.Type, error) {
+	if b.mapper == nil {
+		return nil, fmt.Errorf("internal error: type ID %d not resolved due to missing types table", id)
+	}
 	typ := b.mapper.LookupType(uint32(id))
 	if typ == nil {
-		return nil, fmt.Errorf("internal error: type ID %d not found in TypeDefs", id)
+		return nil, fmt.Errorf("internal error: type ID %d not found in types table", id)
 	}
 	return typ, nil
 }
