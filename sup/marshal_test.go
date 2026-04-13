@@ -2,7 +2,6 @@ package sup_test
 
 import (
 	"bytes"
-	"fmt"
 	"net"
 	"net/netip"
 	"testing"
@@ -38,11 +37,13 @@ func TestInterfaceMarshal(t *testing.T) {
 
 	supRose, err := m.Marshal(Thing(&Plant{"red"}))
 	require.NoError(t, err)
-	assert.Equal(t, `{MyColor:"red"}::=Plant`, supRose)
+	assert.Equal(t, `type Plant={MyColor:string}
+{MyColor:"red"}::Plant`, supRose)
 
 	supFlamingo, err := m.Marshal(Thing(&Animal{"pink"}))
 	require.NoError(t, err)
-	assert.Equal(t, `{MyColor:"pink"}::=Animal`, supFlamingo)
+	assert.Equal(t, `type Animal={MyColor:string}
+{MyColor:"pink"}::Animal`, supFlamingo)
 
 	u := sup.NewUnmarshaler()
 	u.Bind(Plant{}, Animal{})
@@ -80,7 +81,7 @@ func TestMarshal(t *testing.T) {
 	m.Decorate(sup.StyleSimple)
 	z, err = m.Marshal(Roll(true))
 	require.NoError(t, err)
-	assert.Equal(t, `true::=Roll`, z)
+	assert.Equal(t, "type Roll=bool\ntrue::Roll", z)
 }
 
 type BytesRecord struct {
@@ -122,7 +123,9 @@ func TestBytes(t *testing.T) {
 	rec, err = m.Marshal(id)
 	require.NoError(t, err)
 	require.NotNil(t, rec)
-	assert.Equal(t, "{A:0x00010203::=ID,B:0x04050607::ID}::=IDRecord", sup.FormatValue(rec))
+	assert.Equal(t, `type ID=bytes
+type IDRecord={A:ID,B:ID}
+{A:0x00010203,B:0x04050607}::IDRecord`, sup.FormatValueWithTypes(rec))
 
 	var id2 IDRecord
 	u := sup.NewBSUPUnmarshaler()
@@ -199,9 +202,6 @@ func TestMixedTypeUnmarshal(t *testing.T) {
 		type Plant={MyColor:string}
 		{S:[{MyColor:"red"}::Plant,{MyColor:"blue"}::Animal]}
 		`
-	val, _ := sup.ParseValue(super.NewContext(), in)
-	fmt.Println("VAL", sup.String(val.Type()), sup.FormatValueWithTypes(val))
-
 	u := sup.NewUnmarshaler()
 	u.Bind(Animal{}, Plant{}, ArrayOfThings{})
 	var out ArrayOfThings
@@ -449,7 +449,7 @@ func TestInterfaceWithConcreteEmptyValue(t *testing.T) {
 	// This case doesn't need a binding because we set the
 	// interface value to an empty underlying value.
 	out := Metadata(&Primitive{})
-	err := u.Unmarshal(`{Foo:"foo"}::=Primitive`, &out)
+	err := u.Unmarshal(`type Primitive={Foo:string} {Foo:"foo"}::Primitive`, &out)
 	require.NoError(t, err)
 	assert.Equal(t, &Primitive{Foo: "foo"}, out)
 }
