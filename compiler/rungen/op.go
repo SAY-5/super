@@ -156,6 +156,9 @@ func (b *Builder) compileMain(main *dag.Main, parents []sbuf.Puller) ([]sbuf.Pul
 }
 
 func (b *Builder) lookupType(id int) (super.Type, error) {
+	if typ, err := super.LookupPrimitiveByID(id); err == nil {
+		return typ, nil
+	}
 	if b.mapper == nil {
 		return nil, fmt.Errorf("internal error: type ID %d not resolved due to missing types table", id)
 	}
