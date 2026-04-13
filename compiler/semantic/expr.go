@@ -331,16 +331,7 @@ func (t *translator) expr(e ast.Expr, inType super.Type) (sem.Expr, super.Type) 
 			}
 			val = sup.FormatValue(v)
 		case *ast.TypeValue:
-			typRef, err := t.semType(term.Value)
-			if err != nil {
-				t.error(e, err)
-				return badExpr, t.checker.unknown
-			}
-			typ, err := t.defs.LookupType(typRef.(*sem.TypeExpr).ID)
-			if err != nil {
-				panic(err)
-			}
-			val = "<" + sup.FormatType(typ) + ">"
+			return t.semType(term.Value)
 		default:
 			panic(fmt.Errorf("unexpected term value: %s (%T)", e.Kind, e))
 		}
@@ -407,24 +398,7 @@ func (t *translator) expr(e ast.Expr, inType super.Type) (sem.Expr, super.Type) 
 			Elems: elems,
 		}, t.sctx.MustLookupTypeRecord(fields)
 	case *ast.TypeValue:
-		typRef, err := t.semType(e.Value)
-		if err != nil {
-			t.error(e, err)
-			return badExpr, t.checker.unknown
-		}
-		typ, err := t.defs.LookupType(typRef.(*sem.TypeExpr).ID)
-		if err != nil {
-			panic(err)
-		}
-
-		typ, err := t.semType(e.Value)
-		if err != nil {
-			return badExpr, t.checker.unknown
-		}
-		return &sem.PrimitiveExpr{
-			Node:  e,
-			Value: "<" + typ + ">",
-		}, super.TypeType
+		return t.semType(e.Value)
 	case *ast.UnaryExpr:
 		operand, typ := t.expr(e.Operand, inType)
 		if e.Op == "+" {
@@ -1224,15 +1198,16 @@ func DotExprToFieldPath(e ast.Expr) *sem.ThisExpr {
 	return nil
 }
 
-func (t *translator) semType(typ ast.Type) (sem.Expr, error) {
+func (t *translator) semType(typ ast.Type) (sem.Expr, super.Type) {
 	id, err := t.types.LookupType(typ)
 	if err != nil {
-		return nil, err
+		t.error(typ, err)
+		return badExpr, t.checker.unknown
 	}
 	return &sem.TypeExpr{
 		Node: typ,
 		ID:   id,
-	}, nil
+	}, super.TypeType
 }
 
 func (t *translator) arrayElems(elems []ast.ArrayElem, inType super.Type) ([]sem.ArrayElem, super.Type) {

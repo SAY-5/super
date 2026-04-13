@@ -1350,23 +1350,12 @@ func (t *translator) queryDecl(q *ast.QueryDecl) {
 }
 
 func (t *translator) typeDecl(d *ast.TypeDecl) {
-	typ, err := t.semType(d.Type)
-	if err != nil {
-		t.error(d.Type, err)
-		typ = "null"
-	}
-	e := &sem.PrimitiveExpr{
-		Node:  d.Name,
-		Value: fmt.Sprintf("<%s=%s>", sup.QuotedName(d.Name.Name), typ),
-	}
-	val, ok := t.mustEval(e)
+	e, _ := t.semType(d.Type)
+	typeRef, ok := e.(*sem.TypeExpr)
 	if !ok {
-		// When this fails (e.., type redeclared), the error is already logged
-		// so we just return here.
 		return
 	}
-	e.Value = sup.FormatValue(val)
-	if err := t.scope.BindSymbol(d.Name.Name, e); err != nil {
+	if err := t.scope.BindSymbol(d.Name.Name, typeRef.ID); err != nil {
 		t.error(d.Name, err)
 	}
 }
