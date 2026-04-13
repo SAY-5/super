@@ -90,6 +90,12 @@ func (b *Builder) compileExpr(e dag.Expr) (expr.Evaluator, error) {
 		return b.compileSubquery(e)
 	case *dag.ThisExpr:
 		return expr.NewDottedExpr(b.sctx(), field.Path(e.Path)), nil
+	case *dag.TypeExpr:
+		typ, err := b.lookupType(e.ID)
+		if err != nil {
+			return nil, err
+		}
+		return expr.NewLiteral(b.rctx.Sctx.LookupTypeValue(typ)), nil
 	case *dag.UnaryExpr:
 		return b.compileUnary(*e)
 	default:

@@ -52,6 +52,7 @@ var ErrJoinParents = errors.New("join requires two upstream parallel query paths
 type Builder struct {
 	rctx            *runtime.Context
 	mctx            *super.Context
+	mapper          *super.TypeDefsMapper
 	env             *exec.Environment
 	readers         []sio.Reader
 	progress        *vio.Progress
@@ -147,7 +148,19 @@ func (b *Builder) compileMain(main *dag.Main, parents []sbuf.Puller) ([]sbuf.Pul
 	for _, f := range main.Funcs {
 		b.funcs[f.Tag] = f
 	}
+	if len(main.Types) != 0 {
+		defs := super.NewTypeDefsFromBytes(main.Types)
+		b.mapper = super.NewTypeDefsMapper(b.rctx.Sctx, defs)
+	}
 	return b.compileSeq(main.Body, parents)
+}
+
+func (b *Builder) lookupType(id int) (super.Type, error) {
+	typ := b.mapper.LookupType(uint32(id))
+	if typ == nil {
+		return nil, fmt.Errorf("internal error: type ID %d not found in TypeDefs", id)
+	}
+	return typ, nil
 }
 
 func (b *Builder) compileLeaf(o dag.Op, parent sbuf.Puller) (sbuf.Puller, error) {
