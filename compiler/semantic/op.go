@@ -1354,7 +1354,11 @@ func (t *translator) typeDecl(d *ast.TypeDecl) {
 	if err != nil {
 		t.error(d.Name, err)
 	}
-	if err := t.scope.BindSymbol(d.Name.Name, typeRef.ID); err != nil {
+	typeRef := &sem.TypeExpr{
+		Node: d.Type,
+		ID:   id,
+	}
+	if err := t.scope.BindSymbol(d.Name.Name, typeRef); err != nil {
 		t.error(d.Name, err)
 	}
 }
