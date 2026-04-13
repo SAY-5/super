@@ -141,7 +141,7 @@ func TestCast(t *testing.T) {
 	testSuccessful(t, "cast(1, 2)", "", `error({message:"cast target must be a type or type name",on:2})`)
 
 	// Constant name argument
-	testSuccessful(t, `cast(1, "my_int64")`, "", "1::=my_int64")
+	testSuccessful(t, `cast(1, "my_int64")`, "", "type my_int64=int64\n1::my_int64")
 	testSuccessful(t, `cast(1, "uint64")`, "",
 		`error("named type collides with primitive type: uint64")`)
 
@@ -151,7 +151,7 @@ func TestCast(t *testing.T) {
 		`error({message:"cast target must be a type or type name",on:2})`)
 
 	// Variable name argument
-	testSuccessful(t, "cast(1, name)", `{name:"my_int64"}`, "1::=my_int64")
+	testSuccessful(t, "cast(1, name)", `{name:"my_int64"}`, "type my_int64=int64\n1::my_int64")
 	testSuccessful(t, "cast(1, name)", `{name:"uint64"}`,
 		`error("named type collides with primitive type: uint64")`)
 	testCompilationError(t, "cast()", function.ErrTooFewArgs)
