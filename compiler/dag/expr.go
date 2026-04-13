@@ -133,6 +133,10 @@ type (
 		Kind string   `json:"kind" unpack:""`
 		Path []string `json:"path"`
 	}
+	TypeExpr struct {
+		Kind string `json:"kind" unpack:""`
+		ID   int    `json:"id"`
+	}
 	UnaryExpr struct {
 		Kind    string `json:"kind" unpack:""`
 		Op      string `json:"op"`
@@ -160,6 +164,7 @@ func (*SetExpr) exprNode()          {}
 func (*SliceExpr) exprNode()        {}
 func (*SubqueryExpr) exprNode()     {}
 func (*ThisExpr) exprNode()         {}
+func (*TypeExpr) exprNode()         {}
 func (*UnaryExpr) exprNode()        {}
 
 // Various Expr fields.

@@ -1350,10 +1350,9 @@ func (t *translator) queryDecl(q *ast.QueryDecl) {
 }
 
 func (t *translator) typeDecl(d *ast.TypeDecl) {
-	e, _ := t.semType(d.Type)
-	typeRef, ok := e.(*sem.TypeExpr)
-	if !ok {
-		return
+	id, err := t.types.BindType(d.Name.Name, d.Type)
+	if err != nil {
+		t.error(d.Name, err)
 	}
 	if err := t.scope.BindSymbol(d.Name.Name, typeRef.ID); err != nil {
 		t.error(d.Name, err)
