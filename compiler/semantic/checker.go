@@ -402,6 +402,8 @@ func (c *checker) expr(typ super.Type, e sem.Expr) super.Type {
 		return typ
 	case *sem.ThisExpr:
 		return c.this(e.Node, e, typ)
+	case *sem.TypeExpr:
+		return super.TypeType
 	case *sem.UnaryExpr:
 		typ = c.expr(typ, e.Operand)
 		switch e.Op {

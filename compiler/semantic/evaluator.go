@@ -242,7 +242,7 @@ func (e *evaluator) expr(expr sem.Expr) bool {
 			}
 		}
 		return isConst
-	case *sem.PrimitiveExpr:
+	case *sem.PrimitiveExpr, *sem.TypeExpr:
 		return true
 	case *sem.RecordExpr:
 		return e.recordElems(expr.Elems)
