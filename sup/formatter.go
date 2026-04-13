@@ -644,6 +644,10 @@ func FormatValue(val super.Value) string {
 	return newFormatter(0, true).FormatValue(val)
 }
 
+func FormatValueWithTypes(val super.Value) string {
+	return NewStreamFormatter(0, true).FormatValue(val)
+}
+
 func String(p any) string {
 	if typ, ok := p.(super.Type); ok {
 		return FormatType(typ)

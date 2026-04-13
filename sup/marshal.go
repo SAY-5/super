@@ -779,6 +779,7 @@ func (u *UnmarshalBSUPContext) decodeAny(val super.Value, v reflect.Value) (x er
 		if !v.IsNil() {
 			return u.decodeAny(val, v.Elem())
 		}
+		fmt.Println("MARSH TYP", String(val.Type()))
 		template, err := u.lookupGoType(val.Type(), val.Bytes())
 		if err != nil {
 			return err
@@ -1107,6 +1108,7 @@ func typeNameOfValue(value any) (string, error) {
 func (u *UnmarshalBSUPContext) lookupGoType(typ super.Type, bytes scode.Bytes) (reflect.Type, error) {
 	switch typ := typ.(type) {
 	case *super.TypeNamed:
+		fmt.Println("NAMED", typ.Name)
 		if template := u.binder.lookup(typ.Name); template != nil {
 			return template, nil
 		}

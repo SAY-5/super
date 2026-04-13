@@ -2,6 +2,7 @@ package sup_test
 
 import (
 	"bytes"
+	"fmt"
 	"net"
 	"net/netip"
 	"testing"
@@ -193,10 +194,18 @@ type ArrayOfThings struct {
 }
 
 func TestMixedTypeUnmarshal(t *testing.T) {
+	const in = `
+		type Animal={MyColor:string}
+		type Plant={MyColor:string}
+		{S:[{MyColor:"red"}::Plant,{MyColor:"blue"}::Animal]}
+		`
+	val, _ := sup.ParseValue(super.NewContext(), in)
+	fmt.Println("VAL", sup.String(val.Type()), sup.FormatValueWithTypes(val))
+
 	u := sup.NewUnmarshaler()
 	u.Bind(Animal{}, Plant{}, ArrayOfThings{})
 	var out ArrayOfThings
-	err := u.Unmarshal(`{S:[{MyColor:"red"}::=Plant,{MyColor:"blue"}::=Animal]}`, &out)
+	err := u.Unmarshal(in, &out)
 	require.NoError(t, err)
 	assert.Equal(t, ArrayOfThings{S: []Thing{&Plant{"red"}, &Animal{"blue"}}}, out)
 }
@@ -275,7 +284,8 @@ func TestBSUPValueField(t *testing.T) {
 	m.Decorate(sup.StyleSimple)
 	zv, err := m.Marshal(bsupValueField)
 	require.NoError(t, err)
-	assert.Equal(t, `{Name:"test1",field:fusion(0xf6::all,<int64>)}::=BSUPValueField`, sup.FormatValue(zv))
+	assert.Equal(t, `type BSUPValueField={Name:string,field:fusion(all)}
+{Name:"test1",field:fusion(0xf6,<int64>)}::BSUPValueField`, sup.FormatValueWithTypes(zv))
 	u := sup.NewBSUPUnmarshaler()
 	var out BSUPValueField
 	err = u.Unmarshal(zv, &out)
@@ -293,7 +303,8 @@ func TestBSUPValueField(t *testing.T) {
 	m2.Decorate(sup.StyleSimple)
 	zv3, err := m2.Marshal(bsupValueField2)
 	require.NoError(t, err)
-	assert.Equal(t, `{Name:"test2",field:fusion(0x04666f6f07020202040206::all,<{s:string,a:[int64]}>)}::=BSUPValueField`, sup.FormatValue(zv3))
+	assert.Equal(t, `type BSUPValueField={Name:string,field:fusion(all)}
+{Name:"test2",field:fusion(0x04666f6f07020202040206,<{s:string,a:[int64]}>)}::BSUPValueField`, sup.FormatValueWithTypes(zv3))
 	u2 := sup.NewBSUPUnmarshaler()
 	var out2 BSUPValueField
 	err = u2.Unmarshal(zv3, &out2)

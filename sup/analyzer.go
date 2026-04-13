@@ -337,6 +337,33 @@ func (a *Analyzer) normalizeElems(vals []Value) ([]Value, super.Type, error) {
 	return unions, union, nil
 }
 
+func (a Analyzer) convertError(val *ast.Error) (Value, error) {
+	v, err := a.convertValue(val.Value)
+	if err != nil {
+		return nil, err
+	}
+	return &Error{
+		typ:   a.sctx.LookupTypeError(v.Type()),
+		value: v,
+	}, nil
+}
+
+func (a Analyzer) convertFusion(val *ast.Fusion) (Value, error) {
+	superVal, err := a.convertValue(val.Value)
+	if err != nil {
+		return nil, err
+	}
+	subType, err := a.convertTypeValue(val.Type)
+	if err != nil {
+		return nil, err
+	}
+	return &Fusion{
+		value:   superVal,
+		typ:     a.sctx.LookupTypeFusion(superVal.Type()),
+		subtype: a.sctx.LookupTypeValue(subType.(*TypeValue).value).Bytes(),
+	}, nil
+}
+
 func (a *Analyzer) decorate(val Value, typ super.Type) (Value, error) {
 	if _, ok := super.TypeUnder(typ).(*super.TypeUnion); ok {
 		return a.createUnion(val, typ)
@@ -388,21 +415,20 @@ func (a *Analyzer) decoratePrimitive(val *Primitive, decorator super.Type) (Valu
 	if enumType, ok := super.TypeUnder(decorator).(*super.TypeEnum); ok {
 		return a.decorateEnum(val, enumType)
 	}
-	typ, err := primitiveCast(val.typ, decorator)
-	if err != nil {
+	if err := primitiveOk(val.typ, decorator); err != nil {
 		return nil, err
 	}
-	return &Primitive{typ: typ, text: val.text}, nil
+	return &Primitive{typ: decorator, text: val.text}, nil
 }
 
-func primitiveCast(typ, cast super.Type) (super.Type, error) {
-	typID, castID := typ.ID(), cast.ID()
+func primitiveOk(typ, decorator super.Type) error {
+	typID, castID := typ.ID(), decorator.ID()
 	if typID == castID ||
 		super.IsInteger(typID) && (super.IsInteger(castID) || super.IsFloat(castID)) ||
 		super.IsFloat(typID) && super.IsFloat(castID) {
-		return cast, nil
+		return nil
 	}
-	return nil, fmt.Errorf("type mismatch: %q cannot be used as %q", FormatType(typ), FormatType(cast))
+	return fmt.Errorf("type mismatch: %q cannot be used as %q", FormatType(typ), FormatType(decorator))
 }
 
 func (a *Analyzer) decorateEnum(val *Primitive, enum *super.TypeEnum) (Value, error) {
@@ -432,7 +458,7 @@ func (a *Analyzer) decorateRecord(val *Record, decorator super.Type) (Value, err
 		fields = append(fields, val)
 	}
 	return &Record{
-		typ:    typ,
+		typ:    decorator,
 		fields: fields,
 	}, nil
 }
@@ -451,7 +477,7 @@ func (a Analyzer) decorateArray(array *Array, decorator super.Type) (Value, erro
 		elems = append(elems, v)
 	}
 	return &Array{
-		typ:   typ,
+		typ:   decorator,
 		elems: elems,
 	}, nil
 }
@@ -470,7 +496,7 @@ func (a Analyzer) decorateSet(set *Set, decorator super.Type) (Value, error) {
 		elems = append(elems, v)
 	}
 	return &Set{
-		typ:   typ,
+		typ:   decorator,
 		elems: elems,
 	}, nil
 }
@@ -522,7 +548,7 @@ func (a Analyzer) decorateMap(m *Map, decorator super.Type) (Value, error) {
 		entries = append(entries, Entry{key, val})
 	}
 	return &Map{
-		typ:     typ,
+		typ:     decorator,
 		entries: entries,
 	}, nil
 }
@@ -549,33 +575,6 @@ func (a Analyzer) decorateError(val *Error, decorator super.Type) (Value, error)
 	return &Error{
 		typ:   decorator,
 		value: v,
-	}, nil
-}
-
-func (a Analyzer) convertError(val *ast.Error) (Value, error) {
-	v, err := a.convertValue(val.Value)
-	if err != nil {
-		return nil, err
-	}
-	return &Error{
-		typ:   a.sctx.LookupTypeError(v.Type()),
-		value: v,
-	}, nil
-}
-
-func (a Analyzer) convertFusion(val *ast.Fusion) (Value, error) {
-	superVal, err := a.convertValue(val.Value)
-	if err != nil {
-		return nil, err
-	}
-	subType, err := a.convertTypeValue(val.Type)
-	if err != nil {
-		return nil, err
-	}
-	return &Fusion{
-		value:   superVal,
-		typ:     a.sctx.LookupTypeFusion(superVal.Type()),
-		subtype: a.sctx.LookupTypeValue(subType.(*TypeValue).value).Bytes(),
 	}, nil
 }
 
