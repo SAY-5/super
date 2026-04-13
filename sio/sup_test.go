@@ -138,14 +138,17 @@ func TestJsup(t *testing.T) {
 }
 
 func TestNamed(t *testing.T) {
-	const simple = `{foo:"bar",orig_h:127.0.0.1::=ipaddr}`
+	const simple = `type ipaddr=ip
+{foo:"bar",orig_h:127.0.0.1::ipaddr}`
 	const multipleRecords = `
-{foo:"bar",orig_h:127.0.0.1::=ipaddr}
-{foo:"bro",resp_h:127.0.0.1::=ipaddr}
+type ipaddr=ip
+{foo:"bar",orig_h:127.0.0.1::ipaddr}
+{foo:"bro",resp_h:127.0.0.1::ipaddr}
 `
 	const recordNamed = `
-{foo:{host:127.0.0.2}::=myrec}
-{foo:null::(null|(myrec={host:ip}))}
+type myrec={host:ip}
+{foo:{host:127.0.0.2}::myrec}
+{foo:null::(null|myrec)}
 `
 	t.Run("BSUP", func(t *testing.T) {
 		t.Run("simple", func(t *testing.T) {
