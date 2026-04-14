@@ -51,6 +51,9 @@ type (
 		value Value
 	}
 	Null struct {
+		// Nulls aren't typed but they can be named so this field holds
+		// the named type when decorated as such.
+		typ super.Type
 	}
 	TypeValue struct {
 		typ   super.Type
@@ -81,7 +84,7 @@ func (s *Set) Type() super.Type       { return s.typ }
 func (u *Union) Type() super.Type     { return u.typ }
 func (e *Enum) Type() super.Type      { return e.typ }
 func (m *Map) Type() super.Type       { return m.typ }
-func (n *Null) Type() super.Type      { return super.TypeNull }
+func (n *Null) Type() super.Type      { return n.typ }
 func (t *TypeValue) Type() super.Type { return t.typ }
 func (e *Error) Type() super.Type     { return e.typ }
 func (f *Fusion) Type() super.Type    { return f.typ }
@@ -203,9 +206,9 @@ func (a *Analyzer) convertPrimitive(val *ast.Primitive) (Value, error) {
 	if typ == nil {
 		return nil, fmt.Errorf("no such primitive type: %q", val.Type)
 	}
-	//XXX why can't we leave Null as Primitive?  what about None?
+	// Null's are here to possibly be decorated with a named type.
 	if typ == super.TypeNull {
-		return &Null{}, nil
+		return &Null{typ: super.TypeNull}, nil
 	}
 	return &Primitive{typ: typ, text: val.Text}, nil
 }
@@ -377,6 +380,11 @@ func (a *Analyzer) decorate(val Value, typ super.Type) (Value, error) {
 		// None value carries the type for an optional field and
 		// the parent decoration overrides.
 		return &None{typ: typ}, nil
+	case *Null:
+		if super.TypeUnder(typ) != super.TypeNull {
+			return nil, fmt.Errorf("illegal null value decorator: %q", FormatType(typ))
+		}
+		return &Null{typ: typ}, nil
 	case *Primitive:
 		return a.decoratePrimitive(val, typ)
 	case *Record:
