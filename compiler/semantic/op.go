@@ -1021,12 +1021,12 @@ func (t *translator) semOp(o ast.Op, seq sem.Seq, inType super.Type) (sem.Seq, s
 							&sem.FieldElem{
 								Node:  o.Expr,
 								Name:  "message",
-								Value: sem.NewLiteral(o, super.NewString("assertion failed")),
+								Value: sem.NewLiteral(o, super.NewString("assertion failed"), t.defs),
 							},
 							&sem.FieldElem{
 								Node:  o.Expr,
 								Name:  "expr",
-								Value: sem.NewLiteral(o, super.NewString(o.Text)),
+								Value: sem.NewLiteral(o, super.NewString(o.Text), t.defs),
 							},
 							&sem.FieldElem{
 								Node:  o.Expr,
@@ -1200,7 +1200,7 @@ func (t *translator) switchOp(op *ast.SwitchOp, seq sem.Seq, inType super.Type) 
 		if c.Expr != nil {
 			e, _ = t.expr(c.Expr, inType)
 		} else if op.Expr == nil {
-			e = sem.NewLiteral(op, super.True)
+			e = sem.NewLiteral(op, super.True, t.defs)
 		}
 		path, typ := t.seq(c.Path, inType)
 		types = append(types, typ)
@@ -1767,7 +1767,7 @@ func (t *translator) mustEvalConst(e sem.Expr) sem.Expr {
 	if !ok {
 		return badExpr
 	}
-	return sem.NewLiteral(e, val)
+	return sem.NewLiteral(e, val, t.defs)
 }
 
 // mustEval leaves errors on the reporter and returns a bool as to whether

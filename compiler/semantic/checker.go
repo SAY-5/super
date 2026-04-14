@@ -89,7 +89,7 @@ func (c *checker) op(typ super.Type, op sem.Op) super.Type {
 		}
 		elems = append(elems, &sem.FieldElem{
 			Name:  op.Alias,
-			Value: sem.NewLiteral(op, super.NewUint64(0)),
+			Value: sem.NewLiteral(op, super.NewUint64(0), c.t.defs),
 		})
 		return c.recordElems(typ, elems)
 	case *sem.CutOp:

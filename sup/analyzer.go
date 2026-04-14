@@ -3,7 +3,6 @@ package sup
 import (
 	"errors"
 	"fmt"
-	"runtime/debug"
 	"slices"
 
 	"github.com/brimdata/super"
@@ -627,7 +626,6 @@ func (a Analyzer) convertType(typ ast.Type) (super.Type, error) {
 	case *ast.TypeRef:
 		typ := a.sctx.LookupByName(t.Name)
 		if typ == nil {
-			debug.PrintStack()
 			return nil, fmt.Errorf("no such type name: %q", t.Name)
 		}
 		return typ, nil

@@ -7,6 +7,7 @@ import (
 	"github.com/brimdata/super/compiler/ast"
 	"github.com/brimdata/super/compiler/rungen"
 	"github.com/brimdata/super/compiler/semantic/sem"
+	"github.com/brimdata/super/scode"
 	"github.com/brimdata/super/sup"
 )
 
@@ -43,6 +44,17 @@ func (e *evaluator) maybeEval(sctx *super.Context, expr sem.Expr) (super.Value, 
 			e.errs.error(literal.Node, err)
 			return val, false
 		}
+		//XXX not sure we need this
+		// XXX make sure any named type value gets put in the context
+		val.Walk(func(typ super.Type, body scode.Bytes) error {
+			if super.TypeUnder(typ) == super.TypeType {
+				_, err := e.translator.defs.LookupByValue(body)
+				if err != nil {
+					panic(err)
+				}
+			}
+			return nil
+		})
 		return val, true
 	}
 	e.expr(expr)
@@ -62,6 +74,17 @@ func (e *evaluator) maybeEval(sctx *super.Context, expr sem.Expr) (super.Value, 
 		e.errs.error(expr, err)
 		return val, false
 	}
+	//XXX not sure we need this
+	// XXX make sure any named type value gets put in the context
+	val.Walk(func(typ super.Type, body scode.Bytes) error {
+		if super.TypeUnder(typ) == super.TypeType {
+			_, err := e.translator.defs.LookupByValue(body)
+			if err != nil {
+				panic(err)
+			}
+		}
+		return nil
+	})
 	return val, true
 }
 

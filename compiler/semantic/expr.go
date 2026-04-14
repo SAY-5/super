@@ -111,7 +111,7 @@ func (t *translator) expr(e ast.Expr, inType super.Type) (sem.Expr, super.Type) 
 		if _, ok := e.Type.(*ast.DateTypeHack); ok {
 			// cast to time then bucket by 1d as a workaround for not currently
 			// supporting a "date" type.
-			cast := sem.NewCast(e.Expr, expr, super.TypeTime)
+			cast := sem.NewCast(e.Expr, expr, super.TypeTime, t.defs)
 			return sem.NewCall(e, "bucket", []sem.Expr{cast, &sem.PrimitiveExpr{Node: e, Value: "1d"}}), super.TypeTime
 		}
 		typeVal, _ := t.semType(e.Type)
@@ -309,7 +309,7 @@ func (t *translator) expr(e ast.Expr, inType super.Type) (sem.Expr, super.Type) 
 		if e.Type == "date" {
 			ts = ts.Trunc(nano.Day)
 		}
-		return sem.NewLiteral(e, super.NewTime(ts)), super.TypeTime
+		return sem.NewLiteral(e, super.NewTime(ts), t.defs), super.TypeTime
 	case *ast.SearchTermExpr:
 		var val string
 		switch term := e.Value.(type) {
@@ -376,7 +376,7 @@ func (t *translator) expr(e ast.Expr, inType super.Type) (sem.Expr, super.Type) 
 			if slice.From != nil {
 				slice.To = sem.NewBinaryExpr(e, "+", slice.From, to)
 			} else {
-				slice.To = sem.NewBinaryExpr(e, "+", to, sem.NewLiteral(e, super.NewInt64(int64(indexBase))))
+				slice.To = sem.NewBinaryExpr(e, "+", to, sem.NewLiteral(e, super.NewInt64(int64(indexBase)), t.defs))
 			}
 		}
 		serr := sem.NewStructuredError(e, "SUBSTRING: string value required", expr)
@@ -524,23 +524,23 @@ func (t *translator) existsExpr(e *ast.ExistsExpr, inType super.Type) (sem.Expr,
 	q, _ := t.subqueryExpr(e, true, e.Body, inType)
 	return sem.NewBinaryExpr(e, ">",
 		sem.NewCall(e, "len", []sem.Expr{q}),
-		sem.NewLiteral(e, super.NewInt64(0))), super.TypeBool
+		sem.NewLiteral(e, super.NewInt64(0), t.defs)), super.TypeBool
 }
 
-func semDynamicType(n ast.Node, tv ast.Type) *sem.CallExpr {
+func semDynamicType(n ast.Node, tv ast.Type, defs *super.Context) *sem.CallExpr {
 	if ref, ok := tv.(*ast.TypeRef); ok {
-		return dynamicTypeName(n, ref.Name)
+		return dynamicTypeName(n, ref.Name, defs)
 	}
 	return nil
 }
 
-func dynamicTypeName(n ast.Node, name string) *sem.CallExpr {
+func dynamicTypeName(n ast.Node, name string, defs *super.Context) *sem.CallExpr {
 	return sem.NewCall(
 		n,
 		"typename",
 		[]sem.Expr{
 			// SUP string literal of type name
-			sem.NewLiteral(n, super.NewString(name)),
+			sem.NewLiteral(n, super.NewString(name), defs),
 		},
 	)
 }
@@ -922,7 +922,7 @@ func (t *translator) semExtractExpr(e, partExpr, argExpr ast.Expr, inType super.
 	return sem.NewCall(e,
 		"date_part",
 		[]sem.Expr{
-			sem.NewLiteral(partExpr, super.NewString(strings.ToLower(partstr))),
+			sem.NewLiteral(partExpr, super.NewString(strings.ToLower(partstr)), t.defs),
 			argSemExpr,
 		},
 	), super.TypeInt64
@@ -1238,7 +1238,7 @@ func (t *translator) arrayElems(elems []ast.ArrayElem, inType super.Type) ([]sem
 
 func (t *translator) fstringExpr(f *ast.FStringExpr, inType super.Type) (sem.Expr, super.Type) {
 	if len(f.Elems) == 0 {
-		return sem.NewLiteral(f, super.NewString("")), super.TypeString
+		return sem.NewLiteral(f, super.NewString(""), t.defs), super.TypeString
 	}
 	var out sem.Expr
 	for _, elem := range f.Elems {
@@ -1246,9 +1246,9 @@ func (t *translator) fstringExpr(f *ast.FStringExpr, inType super.Type) (sem.Exp
 		switch elem := elem.(type) {
 		case *ast.FStringExprElem:
 			e, _ = t.expr(elem.Expr, inType)
-			e = sem.NewCast(f, e, super.TypeString)
+			e = sem.NewCast(f, e, super.TypeString, t.defs)
 		case *ast.FStringTextElem:
-			e = sem.NewLiteral(elem, super.NewString(elem.Text))
+			e = sem.NewLiteral(elem, super.NewString(elem.Text), t.defs)
 		default:
 			panic(elem)
 		}
@@ -1315,14 +1315,14 @@ func (t *translator) scalarSubqueryCheck(n ast.Node, seq sem.Seq, thisType super
 		Node: n,
 		Op:   "==",
 		LHS:  lenCall,
-		RHS:  sem.NewLiteral(n, super.NewInt64(1)),
+		RHS:  sem.NewLiteral(n, super.NewInt64(1), t.defs),
 	}
 	// Note no need to check index_base here since we are directly
 	// creating the underlying index expression.
 	indexExpr := &sem.IndexExpr{
 		Node:  n,
 		Expr:  sem.NewThis(n, nil),
-		Index: sem.NewLiteral(n, super.NewInt64(0)),
+		Index: sem.NewLiteral(n, super.NewInt64(0), t.defs),
 	}
 	innerCond := &sem.CondExpr{
 		Node: n,
