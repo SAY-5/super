@@ -6,25 +6,34 @@ vector: true
 input: |
   false
   false::(int64|bool|null)
-  false::=namedBool
-  false::(namedUnion=int64|bool|null)
+  type namedBool=bool
+  false::namedBool
+  type namedUnion=int64|bool|null
+  false::namedUnion
   true
-  true::=namedBool
+  true::namedBool
   true::(bool|null)
-  true::(namedUnion2=bool|null)
+  type namedUnion2=bool|null
+  true::namedUnion2
   2
-  2::=namedInt
+  type namedInt=int64
+  2::namedInt
   2::(int64|bool)
-  2::(namedUnion3=int64|bool)
+  type namedUnion3=int64|bool
+  2::namedUnion3
   {x:1}
   null
   null::(int64|null)
-  null::=namedNull
-  null::(namedUnion4=int64|null)
+  type namedNull=null
+  null::namedNull
+  type namedUnion4=int64|null
+  null::namedUnion4
   error(1)
   error(1)::(int64|error(int64))
-  error(1)::=namedErr
-  error(1)::(namedUnion5=int64|error(int64))
+  type namedErr=error(int64)
+  error(1)::namedErr
+  type namedUnion5=int64|error(int64)
+  error(1)::namedUnion5
 
 output: |
   [0,false]
