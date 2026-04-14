@@ -1303,7 +1303,7 @@ Array
     }
 
 Set
-  = "|[" __ elems:ArrayElems __ "]|" {
+  = "set[" __ elems:ArrayElems __ "]" {
       return &ast.SetExpr{
           Kind: "SetExpr",
           Elems: sliceOf[ast.ArrayElem](elems),
@@ -1320,7 +1320,7 @@ ArrayElems
 ArrayElem = SpreadElem / ExprElem
 
 Map
-  = "|{" __ exprs:Entries __ "}|" {
+  = "map{" __ exprs:Entries __ "}" {
       return &ast.MapExpr{
           Kind: "MapExpr",
           Entries: sliceOf[ast.MapEntry](exprs),
@@ -1482,14 +1482,14 @@ EasyType
           Loc: loc(c),
       }, nil
     }
-  / "|[" __ typ:Type __ "]|" {
+  / "set[" __ typ:Type __ "]" {
       return &ast.TypeSet{
           Kind: "TypeSet",
           Type: typ.(ast.Type),
           Loc: loc(c),
       }, nil
     }
-  / "|{" __ keyType:Type __ ":" __ valType:Type __ "}|" {
+  / "map{" __ keyType:Type __ ":" __ valType:Type __ "}" {
       return &ast.TypeMap{
         Kind: "TypeMap",
         KeyType: keyType.(ast.Type),

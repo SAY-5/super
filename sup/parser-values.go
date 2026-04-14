@@ -431,17 +431,13 @@ func (p *Parser) matchValueList() ([]ast.Value, error) {
 
 func (p *Parser) matchSetOrMap() (ast.Value, error) {
 	l := p.lexer
-	if ok, err := l.match('|'); !ok || err != nil {
+	lookahead, err := l.peek4()
+	if err != nil {
 		return nil, noEOF(err)
 	}
-	isSet, err := l.matchTight('[')
-	if err != nil {
-		return nil, err
-	}
-	var val ast.Value
-	var which string
-	if isSet {
-		which = "set"
+	switch lookahead {
+	case "set[":
+		l.skip(4)
 		vals, err := p.matchValueList()
 		if err != nil {
 			return nil, err
@@ -453,44 +449,30 @@ func (p *Parser) matchSetOrMap() (ast.Value, error) {
 		if !ok {
 			return nil, p.error("mismatched set value brackets")
 		}
-		val = &ast.Set{
+		return &ast.Set{
 			Kind:     "Set",
 			Elements: vals,
-		}
-	} else {
-		ok, err := l.matchTight('{')
-		if err != nil {
-			return nil, err
-		}
-		if !ok {
-			return nil, p.error("no '|[' or '|{' type bracket at '|' character")
-		}
-		which = "map"
+		}, nil
+	case "map{":
+		l.skip(4)
 		entries, err := p.matchMapEntries()
 		if err != nil {
 			return nil, err
 		}
-		ok, err = l.match('}')
+		ok, err := l.match('}')
 		if err != nil {
 			return nil, err
 		}
 		if !ok {
 			return nil, p.error("mismatched map value brackets")
 		}
-		val = &ast.Map{
+		return &ast.Map{
 			Kind:    "Map",
 			Entries: entries,
-		}
+		}, nil
+	default:
+		return nil, nil
 	}
-	ok, err := l.matchTight('|')
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, p.errorf("mismatched closing bracket while parsing %s value", which)
-	}
-	return val, nil
-
 }
 
 func (p *Parser) matchMapEntries() ([]ast.Entry, error) {

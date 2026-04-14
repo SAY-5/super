@@ -177,7 +177,7 @@ func (f *formatter) formatValue(indent int, typ super.Type, bytes scode.Bytes, p
 	case *super.TypeArray:
 		empty = f.formatElems(indent, "[", "]", t.Type, super.NewValue(t, bytes), known)
 	case *super.TypeSet:
-		empty = f.formatElems(indent, "|[", "]|", t.Type, super.NewValue(t, bytes), known)
+		empty = f.formatElems(indent, "set[", "]", t.Type, super.NewValue(t, bytes), known)
 	case *super.TypeUnion:
 		f.formatUnion(indent, t, bytes)
 	case *super.TypeMap:
@@ -367,7 +367,7 @@ func (f *formatter) formatUnion(indent int, union *super.TypeUnion, bytes scode.
 
 func (f *formatter) formatMap(indent int, typ *super.TypeMap, bytes scode.Bytes, known bool) bool {
 	empty := true
-	f.build("|{")
+	f.build("map{")
 	indent += f.tab
 	sep := f.newline
 	keyElems := newElemBuilder(typ.KeyType)
@@ -394,7 +394,7 @@ func (f *formatter) formatMap(indent int, typ *super.TypeMap, bytes scode.Bytes,
 		sep = "," + f.newline
 	}
 	f.build(f.newline)
-	f.indent(indent-f.tab, "}|")
+	f.indent(indent-f.tab, "}")
 	if keyElems.needsDecoration() || valElems.needsDecoration() {
 		f.decorate(typ, true)
 	}
@@ -488,11 +488,11 @@ func (f *formatterT) formatType(indent int, typ super.Type, parens bool) {
 		f.formatType(indent, typ.Type, false)
 		f.build("]")
 	case *super.TypeSet:
-		f.build("|[")
+		f.build("set[")
 		f.formatType(indent, typ.Type, false)
-		f.build("]|")
+		f.build("]")
 	case *super.TypeMap:
-		f.build("|{")
+		f.build("map{")
 		newline := f.newline
 		tab := f.tab
 		if super.IsPrimitiveType(typ.KeyType) && super.IsPrimitiveType(typ.ValType) {
