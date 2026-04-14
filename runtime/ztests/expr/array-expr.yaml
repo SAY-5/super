@@ -6,8 +6,8 @@ input: |
   {a:error("missing"),b:error("quiet"),c:null}
   {a:[1,2],b:null,c:[3,4]}
   {a:[1,"foo"],b:[2,"bar"],c:[3,"baz"]}
-  {a:|[1,2]|,b:null,c:|[3,4]|}
-  {a:|{"key":"k1"}|,b:null,c:|{"key":"k3"}|}
+  {a:set[1,2]|,b:null,c:set[3,4]|}
+  {a:map{"key":"k1"}|,b:null,c:map{"key":"k3"}|}
   // heterogenous
   {a:"foo",b:1,c:127.0.0.1}
   {a:"bar",b:2,c:127.0.0.2}

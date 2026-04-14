@@ -6,4 +6,5 @@ input: |
   {x:123}
 
 output: |
+  type foo={x:int64}
   {x:123}::=foo
