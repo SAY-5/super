@@ -401,12 +401,20 @@ func (a *Analyzer) decorate(val Value, typ super.Type) (Value, error) {
 }
 
 func (a *Analyzer) createUnion(val Value, decorator super.Type) (Value, error) {
-	union := super.TypeUnder(decorator).(*super.TypeUnion)
+	unionType := super.TypeUnder(decorator).(*super.TypeUnion)
 	typ := val.Type()
 	if typ == decorator {
 		return val, nil
 	}
-	for k, t := range union.Types {
+	if union, ok := val.(*Union); ok {
+		// If we're putting an anonymous union inside of another union then we
+		// need to unflatten the union relationship by deunioning the value,
+		// which can then be inserted into the flat parent.  If this is a named
+		// union, we do not do so as named unions in unions need not be flattened.
+		val = union.value
+		typ = val.Type()
+	}
+	for k, t := range unionType.Types {
 		if typ == t {
 			return &Union{
 				typ:   decorator,
@@ -415,7 +423,7 @@ func (a *Analyzer) createUnion(val Value, decorator super.Type) (Value, error) {
 			}, nil
 		}
 	}
-	return nil, fmt.Errorf("%q is not in union type %q", FormatType(typ), FormatType(union))
+	return nil, fmt.Errorf("%q is not in union type %q", FormatType(typ), FormatType(unionType))
 }
 
 func (a *Analyzer) decoratePrimitive(val *Primitive, decorator super.Type) (Value, error) {

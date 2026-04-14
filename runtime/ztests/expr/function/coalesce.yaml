@@ -6,7 +6,8 @@ input: |
   [null, error("quiet"), "foo"::(uint64|string)]
   ["bar"::string, error("quiet"), 1::uint64::(uint64|string)]
   type port=int64
-  [error("missing")::=missing, 2020::port, null]
+  type missing=error("string")
+  [error("missing")::missing, 2020::port, null]
   [null, error("missing"), error("quiet")]
   [null, "gotme", "ted sando"]
   [null, error({x:1}), "foo"]
