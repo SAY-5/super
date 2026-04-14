@@ -165,13 +165,15 @@ output: |
   type u1=int64
   type u3=string
   type u2=u1|u3
+  type en1=enum(a,b)
   type er1=int64
   type er2=error(er1)
-  fusion(1::p1::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2),<p1>)
-  fusion({a:1}::r2::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2),<r2>)
-  fusion([1]::"a2"::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2),<a2>)
-  fusion(set[1]::s2::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2),<s2>)
-  fusion(map{1:2}::m3::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2),<m3>)
-  fusion(1::u1::u2::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2),<u2>)
-  fusion("a"::enum(a,b)::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2),<enum(a,b)>)
-  fusion(error(1)::er2::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2),<er2>)
+  fusion(1::p1::(p1|r2|a2|s2|m3|u2|en1|er2),<p1>)
+  fusion({a:1}::r2::(p1|r2|a2|s2|m3|u2|en1|er2),<r2>)
+  fusion([1]::"a2"::(p1|r2|a2|s2|m3|u2|en1|er2),<a2>)
+  fusion(set[1]::s2::(p1|r2|a2|s2|m3|u2|en1|er2),<s2>)
+  fusion(map{1:2}::m3::(p1|r2|a2|s2|m3|u2|en1|er2),<m3>)
+  fusion(1::u1::u2::(p1|r2|a2|s2|m3|u2|en1|er2),<u2>)
+  fusion("a"::en1::(p1|r2|a2|s2|m3|u2|en1|er2),<en1>)
+  fusion(error(1)::er2::(p1|r2|a2|s2|m3|u2|en1|er2),<er2>)
+

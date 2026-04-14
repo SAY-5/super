@@ -11,7 +11,7 @@ input: |
   {a:set[null,"1.1.1.1","2"],b:set[{b:null},{b:"1.1.1.1"},{b:"2"}]}
 
 output: |
-  {a:null::(null|set[ip]),b:null::(null|set[{b:ip}])}
+  {a:null::(null|[ip]),b:null::(null|[{b:ip}])}
   {a:[]::[ip],b:[]::[{b:ip}]}
   {a:[1.1.1.1,2.2.2.2],b:[{b:1.1.1.1},{b:2.2.2.2}]}
   {a:[1.1.1.1],b:[{b:null::(ip|null)},{b:2.2.2.2}]}

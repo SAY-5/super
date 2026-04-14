@@ -165,13 +165,14 @@ output: |
   type u1=int64
   type u3=string
   type u2=u1|u3
+  type en1=enum(a,b)
   type er1=int64
   type er2=error(er1)
-  1::p1::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2)
-  {a:1}::r2::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2)
-  [1]::"a2"::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2)
-  set[1]::s2::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2)
-  map{1:2}::m3::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2)
-  1::u1::u2::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2)
-  "a"::enum(a,b)::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2)
-  error(1)::er2::(p1|r2|a2|s2|m3|u2|enum(a,b)|er2)
+  1::p1::(p1|r2|a2|s2|m3|u2|en1|er2)
+  {a:1}::r2::(p1|r2|a2|s2|m3|u2|en1|er2)
+  [1]::"a2"::(p1|r2|a2|s2|m3|u2|en1|er2)
+  set[1]::s2::(p1|r2|a2|s2|m3|u2|en1|er2)
+  map{1:2}::m3::(p1|r2|a2|s2|m3|u2|en1|er2)
+  1::u1::u2::(p1|r2|a2|s2|m3|u2|en1|er2)
+  "a"::en1::(p1|r2|a2|s2|m3|u2|en1|er2)
+  error(1)::er2::(p1|r2|a2|s2|m3|u2|en1|er2)
