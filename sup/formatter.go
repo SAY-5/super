@@ -460,9 +460,7 @@ func formatPrimitive(b *strings.Builder, typ super.Type, bytes scode.Bytes) {
 	case *super.TypeOfNet:
 		b.WriteString(super.DecodeNet(bytes).String())
 	case *super.TypeOfType:
-		b.WriteByte('<')
 		b.WriteString(FormatTypeValue(bytes))
-		b.WriteByte('>')
 	case *super.TypeOfNull:
 		b.WriteString("null")
 	case *super.TypeOfNone:

@@ -28,10 +28,12 @@ input: |
   map{["array"]:1}
   map{set["set"]:1}
   map{map{"map":0}:1}
-  map{0:1,0::uint64:2,0::=t:3,"0":4}
+  type t=int64
+  map{0:1,0::uint64:2,0::t:3,"0":4}
   map{"e0"::enum(e0):1}
   map{error(0):1}
-  map{"named"::=t2:1}
+  type t2=string
+  map{"named"::t2:1}
 
 output-flags: -f json
 
@@ -61,7 +63,7 @@ output: |
   {"[\"array\"]":1}
   {"set[\"set\"]":1}
   {"map{\"map\":0}":1}
-  {"0::uint64":2,"0":1,"0::=t":3,"\"0\"":4}
+  {"0::uint64":2,"0":1,"0::t":3,"\"0\"":4}
   {"e0":1}
   {"error(0)":1}
   {"named":1}

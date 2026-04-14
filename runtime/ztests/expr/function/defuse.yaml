@@ -25,7 +25,9 @@ spq: fuse | defuse(this)
 
 input: &input |
   {a:{b:1}}
-  {a:{b:1,c:2}::=n1}::=n2
+  type n1={b:int64,c:int64}
+  type n2={a:n1}
+  {a:{b:1,c:2}}::n2
 
 output: *input
 
