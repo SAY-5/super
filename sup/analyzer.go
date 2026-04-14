@@ -421,7 +421,7 @@ func (a *Analyzer) createUnion(val Value, decorator super.Type) (Value, error) {
 
 func (a *Analyzer) decoratePrimitive(val *Primitive, decorator super.Type) (Value, error) {
 	if enumType, ok := super.TypeUnder(decorator).(*super.TypeEnum); ok {
-		return a.decorateEnum(val, enumType)
+		return a.decorateEnum(val, enumType, decorator)
 	}
 	if err := primitiveOk(val.typ, decorator); err != nil {
 		return nil, err
@@ -439,17 +439,17 @@ func primitiveOk(typ, decorator super.Type) error {
 	return fmt.Errorf("type mismatch: %q cannot be used as %q", FormatType(typ), FormatType(decorator))
 }
 
-func (a *Analyzer) decorateEnum(val *Primitive, enum *super.TypeEnum) (Value, error) {
+func (a *Analyzer) decorateEnum(val *Primitive, enumType *super.TypeEnum, decorator super.Type) (Value, error) {
 	if val.typ != super.TypeString {
 		return nil, fmt.Errorf("enum value must be string: %q", val.text)
 	}
-	if slices.Contains(enum.Symbols, val.text) {
+	if slices.Contains(enumType.Symbols, val.text) {
 		return &Enum{
-			typ:  enum,
+			typ:  decorator,
 			name: val.text,
 		}, nil
 	}
-	return nil, fmt.Errorf("symbol %q not a member of type %q", val.text, FormatType(enum))
+	return nil, fmt.Errorf("symbol %q not a member of type %q", val.text, FormatType(enumType))
 }
 
 func (a *Analyzer) decorateRecord(val *Record, decorator super.Type) (Value, error) {
