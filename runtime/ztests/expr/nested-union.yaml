@@ -8,4 +8,4 @@ input: |
 error: |
   anonymous union inside union at line 1, column 8:
   values <((int64|bool)|(int64|string))>
-         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~

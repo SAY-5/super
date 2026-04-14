@@ -1353,6 +1353,7 @@ func (t *translator) typeDecl(d *ast.TypeDecl) {
 	id, err := t.types.BindType(d.Name.Name, d.Type)
 	if err != nil {
 		t.error(d.Name, err)
+		return
 	}
 	typeRef := &sem.TypeExpr{
 		Node: d.Type,
