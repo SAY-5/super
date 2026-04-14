@@ -114,10 +114,7 @@ func (t *translator) expr(e ast.Expr, inType super.Type) (sem.Expr, super.Type) 
 			cast := sem.NewCast(e.Expr, expr, super.TypeTime)
 			return sem.NewCall(e, "bucket", []sem.Expr{cast, &sem.PrimitiveExpr{Node: e, Value: "1d"}}), super.TypeTime
 		}
-		typeVal, _ := t.expr(&ast.TypeValue{
-			Kind:  "TypeValue",
-			Value: e.Type,
-		}, inType)
+		typeVal, _ := t.semType(e.Type)
 		// In a future PR, we will add support to see if the expr type is
 		// cast-able and return the appropriate cast type.  For now, we just
 		// return unknown and we don't do futher type checking on this.

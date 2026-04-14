@@ -90,6 +90,10 @@ func (b *Builder) Build(main *dag.Main, readers ...sio.Reader) (map[string]vio.P
 		return nil, nil, errors.New("internal error: DAG entry point is not a data source")
 	}
 	b.readers = readers
+	if len(main.Types) != 0 {
+		defs := super.NewTypeDefsFromBytes(main.Types)
+		b.mapper = super.NewTypeDefsMapper(b.rctx.Sctx, defs)
+	}
 	if b.env.UseVAM() {
 		if _, err := b.compileVamMain(main, nil); err != nil {
 			return nil, nil, err
@@ -148,10 +152,7 @@ func (b *Builder) compileMain(main *dag.Main, parents []sbuf.Puller) ([]sbuf.Pul
 	for _, f := range main.Funcs {
 		b.funcs[f.Tag] = f
 	}
-	if len(main.Types) != 0 {
-		defs := super.NewTypeDefsFromBytes(main.Types)
-		b.mapper = super.NewTypeDefsMapper(b.rctx.Sctx, defs)
-	}
+
 	return b.compileSeq(main.Body, parents)
 }
 
