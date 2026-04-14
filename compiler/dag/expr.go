@@ -8,6 +8,7 @@ import (
 )
 
 type MainExpr struct {
+	Types []byte     `json:"types"`
 	Funcs []*FuncDef `json:"funcs"`
 	Expr  Expr       `json:"expr"`
 }

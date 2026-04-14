@@ -38,13 +38,13 @@ func (d *dagen) assemble(seq sem.Seq, types []byte, funcs map[string]*funcDef) *
 	return &dag.Main{Types: types, Funcs: dagFuncs, Body: dagSeq}
 }
 
-func (d *dagen) assembleExpr(e sem.Expr, funcs map[string]*funcDef) *dag.MainExpr {
+func (d *dagen) assembleExpr(e sem.Expr, types []byte, funcs map[string]*funcDef) *dag.MainExpr {
 	dagExpr := d.expr(e)
 	dagFuncs := make([]*dag.FuncDef, 0, len(d.funcs))
 	for _, f := range funcs {
 		dagFuncs = append(dagFuncs, d.fn(f))
 	}
-	return &dag.MainExpr{Funcs: dagFuncs, Expr: dagExpr}
+	return &dag.MainExpr{Types: types, Funcs: dagFuncs, Expr: dagExpr}
 }
 
 func (d *dagen) seq(seq sem.Seq) dag.Seq {

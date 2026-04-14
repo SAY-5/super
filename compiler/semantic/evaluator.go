@@ -56,7 +56,7 @@ func (e *evaluator) maybeEval(sctx *super.Context, expr sem.Expr) (super.Value, 
 			return super.Value{}, false
 		}
 	}
-	main := newDagen(e.translator.reporter).assembleExpr(expr, e.translator.resolver.funcs)
+	main := newDagen(e.translator.reporter).assembleExpr(expr, e.translator.getTypes(), e.translator.resolver.funcs)
 	val, err := rungen.EvalAtCompileTime(sctx, main)
 	if err != nil {
 		e.errs.error(expr, err)

@@ -671,6 +671,10 @@ func EvalAtCompileTime(sctx *super.Context, main *dag.MainExpr) (val super.Value
 	for _, f := range main.Funcs {
 		b.funcs[f.Tag] = f
 	}
+	if len(main.Types) != 0 {
+		defs := super.NewTypeDefsFromBytes(main.Types)
+		b.mapper = super.NewTypeDefsMapper(b.rctx.Sctx, defs)
+	}
 	return b.evalAtCompileTime(main.Expr)
 }
 
