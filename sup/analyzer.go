@@ -536,9 +536,9 @@ func (a Analyzer) decorateUnion(union *Union, decorator super.Type) (Value, erro
 }
 
 func (a Analyzer) decorateMap(m *Map, decorator super.Type) (Value, error) {
-	typ, ok := decorator.(*super.TypeMap)
+	typ, ok := super.TypeUnder(decorator).(*super.TypeMap)
 	if !ok {
-		return nil, errors.New("map decorator not a map")
+		return nil, fmt.Errorf("map decorator not a map: %q", FormatType(decorator))
 	}
 	entries := make([]Entry, 0, len(m.entries))
 	for _, e := range m.entries {
@@ -571,7 +571,7 @@ func (a Analyzer) decorateTypeValue(tv *TypeValue, decorator super.Type) (Value,
 func (a Analyzer) decorateError(val *Error, decorator super.Type) (Value, error) {
 	typ, ok := super.TypeUnder(decorator).(*super.TypeError)
 	if !ok {
-		return nil, errors.New("error decorator not an error type")
+		return nil, fmt.Errorf("error decorator not an error type: %q", FormatType(decorator))
 	}
 	v, err := a.decorate(val.value, typ.Type)
 	if err != nil {
