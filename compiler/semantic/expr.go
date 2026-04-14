@@ -1207,6 +1207,24 @@ func DotExprToFieldPath(e ast.Expr) *sem.ThisExpr {
 func (t *translator) semType(typ ast.Type) (sem.Expr, super.Type) {
 	id, err := t.types.LookupType(typ)
 	if err != nil {
+		// Try looking in the input for named types which did not resolve,
+		// which will be holding the parsed input
+		if ref, ok := typ.(*ast.TypeRef); ok {
+			if named := t.sctx.LookupByName(ref.Name); named != nil {
+				// Found the type in the main context.  Translate it
+				// to the typedefs context.
+				local, err := t.defs.LookupTypeNamed(named.Name, named.Type)
+				if err != nil {
+					// There can't be conflict since we just tried looking up
+					// this name in the defs context via t.types.
+					panic(err)
+				}
+				return &sem.TypeExpr{
+					Node: typ,
+					ID:   super.TypeID(local),
+				}, super.TypeType
+			}
+		}
 		t.error(typ, err)
 		return badExpr, t.checker.unknown
 	}
