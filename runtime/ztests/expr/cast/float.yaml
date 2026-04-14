@@ -8,7 +8,8 @@ input: |
   "foo"
   1::uint64
   1000000000::uint64
-  2::=named
+  type named=int64
+  2::named
   false
   true
   null
