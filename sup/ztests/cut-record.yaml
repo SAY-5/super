@@ -19,12 +19,12 @@ inputs:
           my_addr: 127.0.0.1,
           my_subnet: 10.0.0.0/8,
           my_enum: "tcp"::=zenum,
-          my_set: |[
+          my_set: set[
               "a",
               "in",
               "set",
               "things"
-          ]|,
+          ],
           my_vector: [
               "order",
               "is",

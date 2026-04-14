@@ -2,7 +2,7 @@ spq: values this, "==="
 
 input: |
   <{foo:int64}|{bar:string}|uint64>
-  <named=|[{foo:int64}|uint64]|>
+  <named=set[{foo:int64}|uint64]>
   <|{{x:string}:{ip:ip,port:uint16}}|>
   <|{string:uint64}|>
   <[int64]>
@@ -22,14 +22,14 @@ output: |
       }
   >
   "==="
-  <named=|[
+  <named=set[
       
           uint64|
           {
               foo: int64
           }
       
-  ]|>
+  ]>
   "==="
   <|{
       {

@@ -106,15 +106,15 @@ inputs:
         }|
       }
       {
-        set: |[
+        set: set[
           1,
           2,
           3,
           4
-        ]|
+        ]
       }
       {
-        union: "hello"::(string|[int32]|[string]|(foo=(string|int32)))
+        union: "hello"::(string|[int32]|[string](foo=(string|int32)))
       }
       {
         union: [
@@ -126,10 +126,10 @@ inputs:
         union: [
           "a",
           "b"
-        ]::(string|[int32]|[string]|(foo=(string|int32)))
+        ]::(string|[int32]|[string](foo=(string|int32)))
       }
       {
-        union: 123::int32::(foo=(string|int32))::(string|[int32]|[string]|(foo=(string|int32)))
+        union: 123::int32::(foo=(string|int32))::(string|[int32]|[string](foo=(string|int32)))
       }
       {
         enum: "bar"::enum(foo,bar,baz)

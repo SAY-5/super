@@ -32,6 +32,6 @@ inputs:
 outputs:
   - name: stdout
     data: |
-      {name:"bob",likes:|["apple","pomegranate"]|}
-      {name:"jim",likes:|["figs"]|}
-      {name:"joe",likes:|["dates","banana","strawberry"]|}
+      {name:"bob",likes:set["apple","pomegranate"]}
+      {name:"jim",likes:set["figs"]}
+      {name:"joe",likes:set["dates","banana","strawberry"]}

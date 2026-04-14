@@ -56,7 +56,7 @@ input: |
   error("bad")
   {x:1}
   [1,2]
-  |[1,2]|
+  set[1,2]
   |{"x":1}|
   "e2"::enum(e1,e2)
 
@@ -64,6 +64,6 @@ output: |
   error("bad")
   error({message:"cannot cast to float64",on:{x:1}})
   error({message:"cannot cast to float64",on:[1,2]})
-  error({message:"cannot cast to float64",on:|[1,2]|})
+  error({message:"cannot cast to float64",on:set[1,2]})
   error({message:"cannot cast to float64",on:|{"x":1}|})
   error({message:"cannot cast to float64",on:"e2"::enum(e1,e2)})

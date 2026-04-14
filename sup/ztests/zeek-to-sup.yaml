@@ -30,17 +30,17 @@ outputs:
         my_addr: 127.0.0.1::(ip|null),
         my_subnet: 10.0.0.0/8::(net|null),
         my_enum: "tcp"::=zenum::(zenum|null),
-        my_set: |[
+        my_set: set[
           "a",
           "in",
           "set",
           "things"
-        ]|::|[string|null]|::(null||[string|null]|),
+        ]::set[string|null]::(null|set[string|null]),
         my_vector: [
           "order",
           "is",
           "important"
-        ]::[string|null]::(null|[string|null]),
+        ]::[string|null]::(null|set[string|null]),
         my_record: {
           name: "Jeanne"::(string|null),
           age: 122::uint64::(uint64|null)

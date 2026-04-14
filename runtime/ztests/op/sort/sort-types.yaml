@@ -15,8 +15,8 @@ input: |
   <|{float64:string}|>
   <[net]>
   <[uint8]>
-  <|[ip]|>
-  <|[time]|>
+  <set[ip]>
+  <set[time]>
   <{x:int64,y:int64}>
   <{x:string}>
   <{x:uint16}>
@@ -71,8 +71,8 @@ output: |
   <{x:int64,y:int64}>
   <[uint8]>
   <[net]>
-  <|[time]|>
-  <|[ip]|>
+  <set[time]>
+  <set[ip]>
   <|{float64:uint8}|>
   <|{float64:string}|>
   <|{bool:string}|>

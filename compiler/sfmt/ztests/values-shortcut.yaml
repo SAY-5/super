@@ -1,13 +1,13 @@
 script: |
   super compile -C '{x:1,...this}'
   super compile -C '[1,2,3]'
-  super compile -C '|["foo","bar"]|'
+  super compile -C 'set["foo","bar"]'
   super compile -C '|{"foo":1,"bar":2}|'
   super compile -C '1::(int64|string)'
   echo "==="
   super compile -dag -C '{x:1,...this}'
   super compile -dag -C '[1,2,3]'
-  super compile -dag -C '|["foo","bar"]|'
+  super compile -dag -C 'set["foo","bar"]'
   super compile -dag -C '|{"foo":1,"bar":2}|'
   super compile -dag -C '1::(int64|string)'
 
@@ -16,7 +16,7 @@ outputs:
     data: |
       values {x:1,...this}
       values [1,2,3]
-      values |["foo","bar"]|
+      values set["foo","bar"]
       values |{"foo":1,"bar":2}|
       values 1::<(int64|string)>
       ===
@@ -27,7 +27,7 @@ outputs:
       | values [1,2,3]
       | output main
       null
-      | values |["foo","bar"]|
+      | values set["foo","bar"]
       | output main
       null
       | values |{"foo":1,"bar":2}|

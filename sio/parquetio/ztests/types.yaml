@@ -29,7 +29,7 @@ inputs:
         err: error("err"),
         rec: {a:1},
         lst: [1,null],
-        set: |[1,null]|,
+        set: set[1,null],
         map: |{1:"one",2:null}|,
       }
 
