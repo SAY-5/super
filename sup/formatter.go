@@ -158,8 +158,8 @@ func (f *formatter) nameOf(typ super.Type) string {
 
 func (f *formatter) formatValueAndDecorate(typ super.Type, bytes scode.Bytes) {
 	known := f.hasName(typ)
-	f.formatValue(0, typ, bytes, known, true)
-	//f.decorate(typ, false)
+	f.formatValue(0, typ, bytes, known, false)
+	f.decorate(typ, false)
 }
 
 func (f *formatter) formatValue(indent int, typ super.Type, bytes scode.Bytes, parentKnown, decorate bool) {
@@ -248,8 +248,13 @@ func (f *formatter) decorate(typ super.Type, empty bool) {
 }
 
 func innerNone(typ super.Type) bool {
-	if inner := super.InnerType(typ); inner == super.TypeNone {
-		return true
+	switch typ := typ.(type) {
+	case *super.TypeSet:
+		return typ.Type == super.TypeNone
+	case *super.TypeArray:
+		return typ.Type == super.TypeNone
+	case *super.TypeMap:
+		return typ.KeyType == super.TypeNone && typ.ValType == super.TypeNone
 	}
 	return false
 }

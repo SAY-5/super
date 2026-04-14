@@ -7,4 +7,4 @@ input: |
 
 output: |
   type foo={x:int64}
-  {x:123}::=foo
+  {x:123}::foo
