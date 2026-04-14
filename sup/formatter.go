@@ -509,9 +509,9 @@ func (f *formatterT) formatType(indent int, typ super.Type, parens bool) {
 		f.formatType(indent, typ.ValType, false)
 		f.build(newline)
 		if newline != "" {
-			f.indent(indent-tab, "}|")
+			f.indent(indent-tab, "}")
 		} else {
-			f.build("}|")
+			f.build("}")
 		}
 	case *super.TypeUnion:
 

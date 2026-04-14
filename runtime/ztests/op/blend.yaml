@@ -161,7 +161,7 @@ output: |
   type s2=set[s1]
   type m1=int64
   type m2=int64
-  type m3=map{m1:m2}|
+  type m3=map{m1:m2}
   type u1=int64
   type u3=string
   type u2=u1|u3
