@@ -67,6 +67,7 @@ type (
 		subtype scode.Bytes
 	}
 	None struct {
+		typ super.Type
 	}
 )
 
@@ -85,7 +86,7 @@ func (n *Null) Type() super.Type      { return super.TypeNull }
 func (t *TypeValue) Type() super.Type { return t.typ }
 func (e *Error) Type() super.Type     { return e.typ }
 func (f *Fusion) Type() super.Type    { return f.typ }
-func (n *None) Type() super.Type      { return super.TypeNone }
+func (n *None) Type() super.Type      { return n.typ }
 
 type Analyzer struct {
 	sctx *super.Context
@@ -159,7 +160,11 @@ func (a *Analyzer) convertValue(val ast.Value) (Value, error) {
 		}
 		return a.convertValue(val.Value)
 	case *ast.None:
-		return &None{}, nil
+		typ, err := a.convertType(val.Type)
+		if err != nil {
+			return nil, err
+		}
+		return &None{typ: typ}, nil
 	case *ast.Primitive:
 		return a.convertPrimitive(val)
 	case *ast.TypeValue:
@@ -370,9 +375,9 @@ func (a *Analyzer) decorate(val Value, typ super.Type) (Value, error) {
 	}
 	switch val := val.(type) {
 	case *None:
-		//XXX this should be an error and we should check for it everywhere;
-		// only place none can be is
-		return &None{}, nil
+		// None value carries the type for an optional field and
+		// the parent decoration overrides.
+		return &None{typ: typ}, nil
 	case *Primitive:
 		return a.decoratePrimitive(val, typ)
 	case *Record:

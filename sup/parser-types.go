@@ -28,9 +28,6 @@ func (p *Parser) matchType() (ast.Type, error) {
 }
 
 func (p *Parser) matchTypeComponent() (ast.Type, error) {
-	if typ, err := p.matchTypeName(); typ != nil || err != nil {
-		return typ, err
-	}
 	if typ, err := p.matchTypeRecord(); typ != nil || err != nil {
 		return typ, err
 	}
@@ -41,6 +38,9 @@ func (p *Parser) matchTypeComponent() (ast.Type, error) {
 		return typ, err
 	}
 	if typ, err := p.matchTypeParens(); typ != nil || err != nil {
+		return typ, err
+	}
+	if typ, err := p.matchTypeName(); typ != nil || err != nil {
 		return typ, err
 	}
 	// no match
@@ -184,7 +184,7 @@ func (p *Parser) matchTypeSetOrMap() (ast.Type, error) {
 	l := p.lexer
 	lookahead, err := l.peek4()
 	if err != nil {
-		return nil, err
+		return nil, noEOF(err)
 	}
 	switch lookahead {
 	case "set[":
