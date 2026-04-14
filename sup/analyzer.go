@@ -404,6 +404,9 @@ func (a *Analyzer) decorate(val Value, typ super.Type) (Value, error) {
 func (a *Analyzer) createUnion(val Value, decorator super.Type) (Value, error) {
 	union := super.TypeUnder(decorator).(*super.TypeUnion)
 	typ := val.Type()
+	if typ == decorator {
+		return val, nil
+	}
 	for k, t := range union.Types {
 		if typ == t {
 			return &Union{
@@ -523,6 +526,9 @@ func (a Analyzer) decorateUnion(union *Union, decorator super.Type) (Value, erro
 		val = union.value
 	}
 	valType := val.Type()
+	if valType == unionType {
+		return val, nil
+	}
 	for k, typ := range unionType.Types {
 		if valType == typ {
 			return &Union{
