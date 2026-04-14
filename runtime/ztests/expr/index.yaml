@@ -96,10 +96,14 @@ spq: values this[1],this["x"]
 vector: true
 
 input: |
-  [1,2,3]::=foo
-  set[4,5,6]::=bar
-  map{1:"foo"}::=baz
-  {"x":123}::=bap
+  type foo=[int64]
+  [1,2,3]::foo
+  type bar=set[int64]
+  set[4,5,6]::bar
+  type baz=map{int64:string}
+  map{1:"foo"}::baz
+  type bap={x:int64}
+  {"x":123}::bap
   
 output: |
   2
