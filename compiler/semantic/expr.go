@@ -328,7 +328,16 @@ func (t *translator) expr(e ast.Expr, inType super.Type) (sem.Expr, super.Type) 
 			}
 			val = sup.FormatValue(v)
 		case *ast.TypeValue:
-			return t.semType(term.Value)
+			e, typ := t.semType(term.Value)
+			typeExpr, ok := e.(*sem.TypeExpr)
+			if !ok {
+				return e, typ
+			}
+			typ, err := t.defs.LookupType(typeExpr.ID)
+			if err != nil {
+				panic(err)
+			}
+			val = "<" + sup.FormatType(typ) + ">"
 		default:
 			panic(fmt.Errorf("unexpected term value: %s (%T)", e.Kind, e))
 		}
