@@ -112,7 +112,7 @@ func (c *canonDAG) expr(e dag.Expr, parent string) {
 		c.expr(e.Expr, "")
 		c.write(" IS NULL")
 	case *dag.MapExpr:
-		c.write("|{")
+		c.write("map{")
 		for k, e := range e.Entries {
 			if k > 0 {
 				c.write(",")
@@ -121,7 +121,7 @@ func (c *canonDAG) expr(e dag.Expr, parent string) {
 			c.write(":")
 			c.expr(e.Value, "")
 		}
-		c.write("}|")
+		c.write("}")
 	case *dag.PrimitiveExpr:
 		c.write("%s", e.Value)
 	case *dag.RecordExpr:
@@ -143,9 +143,9 @@ func (c *canonDAG) expr(e dag.Expr, parent string) {
 	case *dag.SearchExpr:
 		c.write("search(%s)", e.Value)
 	case *dag.SetExpr:
-		c.write("|[")
+		c.write("set[")
 		c.vectorElems(e.Elems)
-		c.write("]|")
+		c.write("]")
 	case *dag.SliceExpr:
 		c.expr(e.Expr, "")
 		c.write("[")

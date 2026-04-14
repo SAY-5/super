@@ -3,8 +3,8 @@ spq: values this, "==="
 input: |
   <{foo:int64}|{bar:string}|uint64>
   <named=set[{foo:int64}|uint64]>
-  <|{{x:string}:{ip:ip,port:uint16}}|>
-  <|{string:uint64}|>
+  <map{{x:string}:{ip:ip,port:uint16}}>
+  <map{string:uint64}>
   <[int64]>
   <error([string])>
   <[[string]]>
@@ -31,16 +31,16 @@ output: |
       
   ]>
   "==="
-  <|{
+  <map{
       {
           x: string
       }: {
           ip: ip,
           port: uint16
       }
-  }|>
+  }>
   "==="
-  <|{string: uint64}|>
+  <map{string: uint64}>
   "==="
   <[int64]>
   "==="

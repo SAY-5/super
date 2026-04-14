@@ -1,10 +1,10 @@
 spq: |
   type conn = {_path:string, id:{src:ip,dst:ip}, etc:string}
   type dns = {_path:string, id:{src:ip,dst:ip}, query:string, query_size:uint64}
-  const schemas = |{
+  const schemas = map{
     "conn": <conn>,
     "dns": <dns>
-  }|
+  }
   values cast(this,schemas[_path])
 
 vector: true

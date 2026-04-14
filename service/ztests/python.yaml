@@ -90,7 +90,7 @@ inputs:
         ]
       }
       {
-        map: |{
+        map: map{
           "a": {
             a: 1::int32,
             b: 2::int32
@@ -103,7 +103,7 @@ inputs:
             a: 3::int32,
             b: 4::int32
           }
-        }|
+        }
       }
       {
         set: set[

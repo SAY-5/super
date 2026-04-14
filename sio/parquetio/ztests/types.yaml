@@ -30,7 +30,7 @@ inputs:
         rec: {a:1},
         lst: [1,null],
         set: set[1,null],
-        map: |{1:"one",2:null}|,
+        map: map{1:"one",2:null},
       }
 
 outputs:
@@ -68,7 +68,7 @@ outputs:
           1,
           null
         ],
-        map: |{
+        map: map{
           1: "one",
           2: null
         }|

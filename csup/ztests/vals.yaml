@@ -16,7 +16,7 @@ inputs:
       "foo"::(int64|string)
       <int64>
       set[1,2,3]
-      |{1:"a",2:"b"}|
+      map{1:"a",2:"b"}
       error("missing")
       null
       null::(string|null)

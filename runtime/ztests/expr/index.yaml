@@ -29,11 +29,11 @@ input: |
   {val:{a:"foo",b:"bar"},idx:1.}
   {val:{a:"bar",b:"baz"},idx:"doesnotexist"}
   // map
-  {val:|{"foo":1,1:2}|,idx:"foo"}
-  {val:|{"foo":1,1:2}|,idx:1}
-  {val:|{"foo":1,1:2,"foo":2}|,idx:"foo"}
-  {val:|{"foo":1,1:2}|,idx:"bar"}
-  {val:|{"foo":1,"bar":127.0.0.1}|,idx:"bar"}
+  {val:map{"foo":1,1:2},idx:"foo"}
+  {val:map{"foo":1,1:2},idx:1}
+  {val:map{"foo":1,1:2,"foo":2},idx:"foo"}
+  {val:map{"foo":1,1:2},idx:"bar"}
+  {val:map{"foo":1,"bar":127.0.0.1},idx:"bar"}
 
 output: |
   "foo"
@@ -98,7 +98,7 @@ vector: true
 input: |
   [1,2,3]::=foo
   set[4,5,6]::=bar
-  |{1:"foo"}|::=baz
+  map{1:"foo"}::=baz
   {"x":123}::=bap
   
 output: |

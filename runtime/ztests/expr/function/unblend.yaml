@@ -128,7 +128,7 @@ input: |
   map{"k1"::(int64|string):1::(int64|string),"k2"::(int64|string):2::(int64|string)}
   map{"k1"::(int64|string):"v1"::(int64|string),2::(int64|string):"v2"::(int64|string)}
   map{"k1":"v1"::(int64|string),"k2":"v2"::(int64|string)}
-  map{}::|{(int64|string):(int64|string)}
+  map{}::map{(int64|string):(int64|string)}
 
 output: |
   map{"k1":"v1","k2":2}
@@ -145,7 +145,7 @@ spq: unblend(this[0])
 vector: true
 
 input: |
-  map{0:|{"k1"::(int64|string):0},1:map{2::(int64|string):3}}
+  map{0:map{"k1"::(int64|string):0},1:map{2::(int64|string):3}}
 
 output: |
   map{"k1":0}

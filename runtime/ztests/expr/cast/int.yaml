@@ -73,7 +73,7 @@ input: |
   {x:1}
   [1,2]
   set[1,2]
-  |{"x":1}|
+  map{"x":1}
   "e2"::enum(e1,e2)
 
 output: |
@@ -81,5 +81,5 @@ output: |
   error({message:"cannot cast to int64",on:{x:1}})
   error({message:"cannot cast to int64",on:[1,2]})
   error({message:"cannot cast to int64",on:set[1,2]})
-  error({message:"cannot cast to int64",on:|{"x":1}|})
+  error({message:"cannot cast to int64",on:map{"x":1}})
   error({message:"cannot cast to int64",on:"e2"::enum(e1,e2)})

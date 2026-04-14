@@ -10,9 +10,9 @@ input: |
   <{x:string}|{x:int64}>
   <{a:net}|{x:int64}>
   <{x:string}|{x:int64,y:int64}>
-  <|{bool:string}|>
-  <|{float64:uint8}|>
-  <|{float64:string}|>
+  <map{bool:string}>
+  <map{float64:uint8}>
+  <map{float64:string}>
   <[net]>
   <[uint8]>
   <set[ip]>
@@ -73,9 +73,9 @@ output: |
   <[net]>
   <set[time]>
   <set[ip]>
-  <|{float64:uint8}|>
-  <|{float64:string}|>
-  <|{bool:string}|>
+  <map{float64:uint8}>
+  <map{float64:string}>
+  <map{bool:string}>
   <{a:net}|{x:int64}>
   <{x:int64}|{x:string}>
   <{x:string}|{x:int64,y:int64}>
