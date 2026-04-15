@@ -159,7 +159,7 @@ func (f *formatter) nameOf(typ super.Type) string {
 func (f *formatter) formatValueAndDecorate(typ super.Type, bytes scode.Bytes) {
 	known := f.hasName(typ)
 	f.formatValue(0, typ, bytes, known, false)
-	f.decorate(typ, false)
+	f.decorate(typ, false, 0)
 }
 
 func (f *formatter) formatValue(indent int, typ super.Type, bytes scode.Bytes, parentKnown, decorate bool) {
@@ -212,7 +212,7 @@ func (f *formatter) formatValue(indent int, typ super.Type, bytes scode.Bytes, p
 		f.endColor()
 	}
 	if decorate && !parentKnown {
-		f.decorate(typ, empty)
+		f.decorate(typ, empty, indent)
 	}
 }
 
@@ -275,7 +275,7 @@ func isShortType(typ super.Type) bool {
 	return false
 }
 
-func (f *formatter) decorate(typ super.Type, empty bool) {
+func (f *formatter) decorate(typ super.Type, empty bool, indent int) {
 	if (!empty && f.isImplied(typ)) || (empty && innerNone(typ)) {
 		return
 	}
@@ -289,7 +289,7 @@ func (f *formatter) decorate(typ super.Type, empty bool) {
 		}
 	} else {
 		f.build("::")
-		f.formatType(0, typ, true)
+		f.formatType(indent, typ, true)
 	}
 }
 
@@ -377,7 +377,7 @@ func (f *formatter) formatElems(indent int, open, close string, inner super.Type
 	if elems.needsDecoration() {
 		// If we haven't seen all the types in the union, print the decorator
 		// so the fullness of the union is persevered.
-		f.decorate(val.Type(), true)
+		f.decorate(val.Type(), true, indent)
 	}
 	return false
 }
@@ -454,7 +454,7 @@ func (f *formatter) formatMap(indent int, typ *super.TypeMap, bytes scode.Bytes,
 	f.build(f.newline)
 	f.indent(indent-f.tab, "}")
 	if keyElems.needsDecoration() || valElems.needsDecoration() {
-		f.decorate(typ, true)
+		f.decorate(typ, true, indent)
 	}
 	return empty
 }
@@ -610,6 +610,21 @@ func (f *formatterT) formatTypeRecord(indent int, typ *super.TypeRecord) {
 }
 
 func (f *formatterT) formatTypeUnion(indent int, typ *super.TypeUnion, parens bool) {
+	if isShortType(typ) {
+		if parens {
+			f.build("(")
+		}
+		sep := ""
+		for _, typ := range typ.Types {
+			f.build(sep)
+			f.formatType(indent, typ, false)
+			sep = "|"
+		}
+		if parens {
+			f.build(")")
+		}
+		return
+	}
 	if parens || f.tab != 0 {
 		f.build("(")
 	}
