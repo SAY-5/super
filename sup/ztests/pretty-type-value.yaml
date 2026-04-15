@@ -2,7 +2,8 @@ spq: values this, "==="
 
 input: |
   <{foo:int64}|{bar:string}|uint64>
-  <named=set[{foo:int64}|uint64]>
+  type named=set[{foo:int64}|uint64]
+  <named>
   <map{{x:string}:{ip:ip,port:uint16}}>
   <map{string:uint64}>
   <[int64]>
@@ -12,7 +13,7 @@ input: |
 output-flags: -pretty=4
 
 output: |
-  <
+  <(
       uint64|
       {
           bar: string
@@ -20,16 +21,15 @@ output: |
       {
           foo: int64
       }
-  >
+  )>
   "==="
-  <named=set[
-      
-          uint64|
-          {
-              foo: int64
-          }
-      
-  ]>
+  type named = set[(
+      uint64|
+      {
+          foo: int64
+      }
+  )]
+  <named>
   "==="
   <map{
       {
@@ -40,13 +40,11 @@ output: |
       }
   }>
   "==="
-  <map{string: uint64}>
+  <map{string:uint64}>
   "==="
   <[int64]>
   "==="
   <error([string])>
   "==="
-  <[
-      [string]
-  ]>
+  <[[string]]>
   "==="

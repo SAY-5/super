@@ -222,9 +222,9 @@ func (f *formatter) formatTypeValue(indent int, bytes scode.Bytes) {
 		panic(err)
 	}
 	f.startColor(color.Gray(160))
-	f.build("<")
+	f.indent(indent, "<")
 	f.formatType(indent, typ, false)
-	f.build(">")
+	f.indent(indent, ">")
 	f.endColor()
 
 }
@@ -505,9 +505,11 @@ func (f *formatterT) formatType(indent int, typ super.Type, parens bool) {
 		f.build("map{")
 		newline := f.newline
 		tab := f.tab
+		indent += tab
 		if super.IsPrimitiveType(typ.KeyType) && super.IsPrimitiveType(typ.ValType) {
 			tab = 0
 			newline = ""
+			indent = 0
 		}
 		f.build(newline)
 		f.indent(indent, "")
@@ -524,7 +526,6 @@ func (f *formatterT) formatType(indent int, typ super.Type, parens bool) {
 			f.build("}")
 		}
 	case *super.TypeUnion:
-
 		f.formatTypeUnion(indent, typ, parens)
 	case *super.TypeEnum:
 		f.formatTypeEnum(typ)
@@ -563,25 +564,20 @@ func (f *formatterT) formatTypeRecord(indent int, typ *super.TypeRecord) {
 }
 
 func (f *formatterT) formatTypeUnion(indent int, typ *super.TypeUnion, parens bool) {
-	indent += f.tab
-	if parens {
+	if parens || f.tab != 0 {
 		f.build("(")
 	}
-	f.build(f.newline)
-	f.indent(indent, "")
-	n := len(typ.Types)
-	for k, typ := range typ.Types {
+	sep := f.newline
+	indent += f.tab
+	for _, typ := range typ.Types {
+		f.build(sep)
+		f.indent(indent, "")
 		f.formatType(indent, typ, false)
-		if k != n-1 {
-			f.build("|" + f.newline)
-			f.indent(indent, "")
-		}
+		sep = "|" + f.newline
 	}
-	indent -= f.tab
-	f.indent(indent, "")
-	if parens {
+	if parens || f.tab != 0 {
 		f.build(f.newline)
-		f.build(")")
+		f.indent(indent-f.tab, ")")
 	}
 }
 
