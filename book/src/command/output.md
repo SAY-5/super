@@ -207,18 +207,18 @@ For example, imagine you'd executed a [meta-query](db.md#meta-queries) via
 {
     ts: 2024-07-19T19:28:22.893089Z,
     name: "MyPool",
-    id: 0x132870564f00de22d252b3438c656691c87842c2::=ksuid.KSUID,
+    id: 0x132870564f00de22d252b3438c656691c87842c2,
     layout: {
-        order: "desc"::=order.Which,
+        order: "desc",
         keys: [
             [
                 "ts"
-            ]::=field.Path
-        ]::=field.List
-    }::=order.SortKey,
+            ]
+        ]
+    },
     seek_stride: 65536,
     threshold: 524288000
-}::=pools.Config
+}
 ```
 
 Using `super -f db`, this can be rendered in the same pretty-printed form as it
