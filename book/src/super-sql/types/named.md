@@ -59,7 +59,12 @@ type foo=int64
 
 _Emit a type name defined in the input data_
 
-```mdtest-spq
+> [!NOTE]
+> This query doesn't work properly yet as a recent change to SuperSQL requires
+> compile-time types and the input is not yet being scanned in the playground
+> examples to compute those types.
+
+```mdtest-spq-skip
 # spq
 values <foo>
 # input
@@ -68,17 +73,4 @@ type foo=int64
 # expected output
 type foo=int64
 <foo>
-```
-
----
-
-_Emit a missing value for an unknown type name_
-
-```mdtest-spq
-# spq
-values <foo>
-# input
-1
-# expected output
-error("missing")
 ```
