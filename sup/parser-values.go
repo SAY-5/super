@@ -549,12 +549,15 @@ func (p *Parser) matchTypeDecl(keyword string) (*ast.TypeDecl, error) {
 	if keyword != "type" {
 		return nil, nil
 	}
-	name, err := p.matchIdentifier()
+	name, ok, err := p.matchSymbol()
 	if err != nil {
 		if err == io.EOF {
 			return nil, errors.New("incomplete type definition at EOF")
 		}
 		return nil, err
+	}
+	if !ok {
+		return nil, nil
 	}
 	l := p.lexer
 	if ok, err := l.match('='); !ok || err != nil {

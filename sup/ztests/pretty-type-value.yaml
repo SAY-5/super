@@ -13,22 +13,15 @@ input: |
 output-flags: -pretty=4
 
 output: |
-  <(
-      uint64|
-      {
-          bar: string
-      }|
-      {
-          foo: int64
-      }
-  )>
+  <uint64|{
+      bar: string
+  }|{
+      foo: int64
+  }>
   "==="
-  type named = set[(
-      uint64|
-      {
-          foo: int64
-      }
-  )]
+  type named = set[uint64|{
+      foo: int64
+  }]
   <named>
   "==="
   <map{

@@ -1,4 +1,6 @@
-spq: cast(this, "named")
+spq: |
+  type named={x:int64}
+  cast(this, "named")
 
 vector: true
 
@@ -15,8 +17,9 @@ input: |
   error("foo")
 
 output: |
-  {x:1}::=named
-  {x:2}::=named
+  type named={x:int64}
+  {x:1}::named
+  {x:2}::named
   error("type \"named\" already exists")
   error("type \"named\" already exists")
   error("type \"named\" already exists")
