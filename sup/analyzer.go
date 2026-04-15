@@ -474,6 +474,9 @@ func (a *Analyzer) decorateRecord(val *Record, decorator super.Type) (Value, err
 	if !ok {
 		return nil, fmt.Errorf("record decorator not a record: %q", FormatType(decorator))
 	}
+	if len(val.fields) != len(typ.Fields) {
+		return nil, fmt.Errorf("record decorator incompatible with record value: %q", FormatType(typ))
+	}
 	fields := make([]Value, 0, len(val.fields))
 	for k, f := range val.fields {
 		val, err := a.decorate(f, typ.Fields[k].Type)

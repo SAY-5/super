@@ -13,7 +13,7 @@ inputs:
 outputs:
   - name: stdout
     data: |
-      type foo=int8
+      type foo = uint8
       {
         a: "hello",
         b: "world",
