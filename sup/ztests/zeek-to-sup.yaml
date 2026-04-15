@@ -26,10 +26,10 @@ outputs:
         my_interval: 2m3.456s::(duration|null),
         my_printable_string: "smile😁smile"::(string|null),
         my_bytes_string: "\t\u0007\u0004"::(string|null),
-        my_port: 80::(port=uint16)::(port|null),
+        my_port: 80::port::(port|null),
         my_addr: 127.0.0.1::(ip|null),
         my_subnet: 10.0.0.0/8::(net|null),
-        my_enum: "tcp"::=zenum::(zenum|null),
+        my_enum: "tcp"::zenum::(zenum|null),
         my_set: set[
           "a",
           "in",
@@ -40,7 +40,7 @@ outputs:
           "order",
           "is",
           "important"
-        ]::[string|null]::(null|set[string|null]),
+        ]::[string|null]::(null|[string|null]),
         my_record: {
           name: "Jeanne"::(string|null),
           age: 122::uint64::(uint64|null)

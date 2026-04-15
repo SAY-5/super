@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/brimdata/super"
 	"github.com/brimdata/super/compiler/dag"
 	"github.com/brimdata/super/pkg/field"
 	"github.com/brimdata/super/sup"
@@ -165,6 +166,12 @@ func (c *canonDAG) expr(e dag.Expr, parent string) {
 		c.write(")")
 	case *dag.ThisExpr:
 		c.fieldpath(e.Path)
+	case *dag.TypeExpr:
+		if typ, err := super.LookupPrimitiveByID(e.ID); err == nil {
+			c.write("<%s>", super.PrimitiveName(typ))
+		} else {
+			c.write("<id:%d>", e.ID)
+		}
 	case *dag.UnaryExpr:
 		if isnull, ok := e.Operand.(*dag.IsNullExpr); ok && e.Op == "!" {
 			c.expr(isnull.Expr, "")

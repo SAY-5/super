@@ -464,7 +464,7 @@ func (a *Analyzer) decorateEnum(val *Primitive, enumType *super.TypeEnum, decora
 			name: val.text,
 		}, nil
 	}
-	return nil, fmt.Errorf("symbol %q not a member of type %q", val.text, FormatType(enumType))
+	return nil, fmt.Errorf("symbol %q not a member of %s", val.text, FormatType(enumType))
 }
 
 func (a *Analyzer) decorateRecord(val *Record, decorator super.Type) (Value, error) {

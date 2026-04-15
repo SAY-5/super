@@ -3,7 +3,7 @@ script: |
   echo // ===
   super compile -C -dag 'values CAST(this AS DATE)'
   echo // ===
-  super compile -C -dag 'values CAST(this AS DOESNOTEXIST)'
+  ! super compile -C -dag 'values CAST(this AS DOESNOTEXIST)'
   echo // ===
   super compile -C 'values CAST(this AS date)'
 
@@ -11,15 +11,17 @@ outputs:
   - name: stdout
     data: |
       null
-      | values cast(this, <int64>)
+      | values cast(this, <id:13>)
       | output main
       // ===
       null
-      | values bucket(cast(this, <time>), 1d)
+      | values bucket(cast(this, <id:9>), 1d)
       | output main
       // ===
-      null
-      | values cast(this, typename("DOESNOTEXIST"))
-      | output main
       // ===
       values CAST(this AS date)
+  - name: stderr
+    data: |
+      no such type name: "DOESNOTEXIST" at line 1, column 21:
+      values CAST(this AS DOESNOTEXIST)
+                          ~~~~~~~~~~~~
