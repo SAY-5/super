@@ -11,11 +11,11 @@ outputs:
   - name: stdout
     data: |
       null
-      | values cast(this, <id:13>)
+      | values cast(this, <int64>)
       | output main
       // ===
       null
-      | values bucket(cast(this, <id:9>), 1d)
+      | values bucket(cast(this, <time>), 1d)
       | output main
       // ===
       // ===

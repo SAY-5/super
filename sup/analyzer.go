@@ -415,12 +415,14 @@ func (a *Analyzer) createUnion(val Value, decorator super.Type) (Value, error) {
 		return val, nil
 	}
 	if union, ok := val.(*Union); ok {
-		// If we're putting an anonymous union inside of another union then we
-		// need to unflatten the union relationship by deunioning the value,
-		// which can then be inserted into the flat parent.  If this is a named
-		// union, we do not do so as named unions in unions need not be flattened.
-		val = union.value
-		typ = val.Type()
+		if _, ok := val.Type().(*super.TypeNamed); !ok {
+			// If we're putting an anonymous union inside of another union then we
+			// need to unflatten the union relationship by deunioning the value,
+			// which can then be inserted into the flat parent.  If this is a named
+			// union, we do not do so as named unions in unions need not be flattened.
+			val = union.value
+			typ = val.Type()
+		}
 	}
 	for k, t := range unionType.Types {
 		if typ == t {
