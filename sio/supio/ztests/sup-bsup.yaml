@@ -8,17 +8,18 @@ inputs:
     data: |
       type foo=uint8
       {a:"hello",b:"world",n:123::int32,f:[1::foo,2::foo,3::foo]}
-      {a:"goodbye",b:"world",n:456::int32,f:[4::foo=uint8,5::foo,6::foo]}
+      {a:"goodbye",b:"world",n:456::int32,f:[4::foo,5::foo,6::foo]}
 
 outputs:
   - name: stdout
     data: |
+      type foo=int8
       {
         a: "hello",
         b: "world",
         n: 123::int32,
         f: [
-          1::(foo=uint8),
+          1::foo,
           2::foo,
           3::foo
         ],
@@ -26,9 +27,7 @@ outputs:
           a: string,
           b: string,
           n: int32,
-          f: [
-            foo=uint8
-          ]
+          f: [foo]
         }>
       }
       {
@@ -36,7 +35,7 @@ outputs:
         b: "world",
         n: 456::int32,
         f: [
-          4::(foo=uint8),
+          4::foo,
           5::foo,
           6::foo
         ],
@@ -44,8 +43,6 @@ outputs:
           a: string,
           b: string,
           n: int32,
-          f: [
-            foo=uint8
-          ]
+          f: [foo]
         }>
       }
