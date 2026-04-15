@@ -9,7 +9,8 @@ input: |
   1::uint64
   10000000000000000000::uint64
   -1.
-  1.5::=named
+  type named=float64
+  1.5::named
   1e8
   false
   true
