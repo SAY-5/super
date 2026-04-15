@@ -119,7 +119,7 @@ func TestOtherStrFuncs(t *testing.T) {
 }
 
 func TestLen(t *testing.T) {
-	record := "{s:|[1::int32,2::int32,3::int32]|,a:[4::int32,5::int32,6::int32]}"
+	record := "{s:set[1::int32,2::int32,3::int32],a:[4::int32,5::int32,6::int32]}"
 
 	testSuccessful(t, "len(s)", record, "3")
 	testSuccessful(t, "len(a)", record, "3")

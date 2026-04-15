@@ -331,7 +331,7 @@ func TestPattern(t *testing.T) {
 }
 
 func TestIn(t *testing.T) {
-	const record = "{a:[1::int32,2::int32,3::int32],s:|[4::int32,5::int32,6::int32]|}"
+	const record = "{a:[1::int32,2::int32,3::int32],s:set[4::int32,5::int32,6::int32]}"
 
 	testSuccessful(t, "1 in a", record, "true")
 	testSuccessful(t, "0 in a", record, "false")

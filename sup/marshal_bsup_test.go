@@ -231,7 +231,7 @@ func TestUnmarshalNull(t *testing.T) {
 		require.NoError(t, sup.UnmarshalBSUP(super.Null, &m))
 		assert.Nil(t, m)
 		m = map[string]string{"key": "value"}
-		val := sup.MustParseValue(super.NewContext(), "null::(null||{string:string}|)")
+		val := sup.MustParseValue(super.NewContext(), "null::(null|map{string:string})")
 		require.NoError(t, sup.UnmarshalBSUP(val, &m))
 		assert.Nil(t, m)
 	})
