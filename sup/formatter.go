@@ -222,11 +222,57 @@ func (f *formatter) formatTypeValue(indent int, bytes scode.Bytes) {
 		panic(err)
 	}
 	f.startColor(color.Gray(160))
-	f.indent(indent, "<")
-	f.formatType(indent, typ, false)
-	f.indent(indent, ">")
+	if isShortType(typ) {
+		f.build("<")
+		f.formatType(indent, typ, false)
+		f.build(">")
+	} else {
+		f.build("<")
+		f.build(f.newline)
+		indent += f.tab
+		f.indent(indent, "")
+		f.formatType(indent, typ, false)
+		f.indent(indent-f.tab, ">")
+	}
 	f.endColor()
+}
 
+func isShortType(typ super.Type) bool {
+	typ = super.TypeUnder(typ)
+	if super.IsPrimitiveType(typ) {
+		return true
+	}
+	switch typ := typ.(type) {
+	case *super.TypeRecord:
+		if len(typ.Fields) <= 4 {
+			for _, f := range typ.Fields {
+				if !isShortType(f.Type) || len(f.Name) > 12 {
+					return false
+				}
+			}
+			return true
+		}
+	case *super.TypeArray:
+		return isShortType(typ.Type)
+	case *super.TypeSet:
+		return isShortType(typ.Type)
+	case *super.TypeMap:
+		return isShortType(typ.KeyType) && isShortType(typ.ValType)
+	case *super.TypeUnion:
+		if len(typ.Types) <= 6 {
+			for _, t := range typ.Types {
+				if !isShortType(t) {
+					return false
+				}
+			}
+			return true
+		}
+	case *super.TypeError:
+		return isShortType(typ.Type)
+	case *super.TypeFusion:
+		return isShortType(typ.Type)
+	}
+	return false
 }
 
 func (f *formatter) decorate(typ super.Type, empty bool) {

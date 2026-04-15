@@ -8,7 +8,8 @@ input: |
   "1.5e9"
   ""
   -1.5e12
-  1::=named
+  type named=int64
+  1::named
   1e+19
   null
   null::({}|null)

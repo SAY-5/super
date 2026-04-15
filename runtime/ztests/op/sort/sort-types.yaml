@@ -20,9 +20,11 @@ input: |
   <{x:int64,y:int64}>
   <{x:string}>
   <{x:uint16}>
-  <named2=type>
+  type named2=type
+  <named2>
   <type>
-  <named1=type>
+  type named1=type
+  <named1>
   <float64>
   <uint16>
   <uint64>
@@ -63,8 +65,10 @@ output: |
   <ip>
   <net>
   <type>
-  <named1=type>
-  <named2=type>
+  type named1=type
+  <named1>
+  type named2=type
+  <named2>
   <null>
   <{x:uint16}>
   <{x:string}>
