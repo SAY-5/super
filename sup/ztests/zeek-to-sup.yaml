@@ -17,6 +17,8 @@ inputs:
 outputs:
   - name: stdout
     data: |
+      type port = uint16
+      type zenum = string
       {
         my_bool: true::(bool|null),
         my_count: 123::uint64::(uint64|null),
