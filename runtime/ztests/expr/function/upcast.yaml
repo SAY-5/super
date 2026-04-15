@@ -72,7 +72,8 @@ output: |
   type n81=n82
   type n83=string
   1::n81::(n81|n83)
-  error({message:"upcast: value not a subtype of n92",on:"a"::enum(a,b)})
+  type n92=enum(a,b)
+  "a"::n92
   type n101=int64
   fusion(1::n101::(n101|string),<n101>)
 
